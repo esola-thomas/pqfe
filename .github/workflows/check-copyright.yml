@@ -1,0 +1,42 @@
+# Copyright (c) 2025 Ernesto Sola-Thomas
+name: Check Copyright Headers
+
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  check-copyright:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Get modified files
+        id: changed-files
+        uses: tj-actions/changed-files@v41
+
+      - name: Check copyright headers
+        run: |
+          #!/bin/bash
+          
+          EXIT_CODE=0
+          REQUIRED_HEADER="Copyright (c) 2025 Ernesto Sola-Thomas"
+          
+          for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
+            # Skip if file doesn't exist (was deleted)
+            [ ! -f "$file" ] && continue
+            
+            # Skip binary files and specific file types
+            if file "$file" | grep -q "text"; then
+              if ! grep -q "$REQUIRED_HEADER" "$file"; then
+                echo "❌ Missing copyright header in: $file"
+                EXIT_CODE=1
+              else
+                echo "✅ Found copyright header in: $file"
+              fi
+            fi
+          done
+          
+          exit $EXIT_CODE 
