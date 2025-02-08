@@ -96,7 +96,7 @@ Files are encrypted using a hybrid scheme:
 If you discover a security vulnerability:
 
 1. Do NOT open a public issue
-2. Email security@your-domain.com
+2. Email info@solathomas.com
 3. Include detailed information
 4. Allow time for response and patch
 
