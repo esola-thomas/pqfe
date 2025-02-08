@@ -5,6 +5,7 @@
 - Python 3.10 or higher
 - pip package manager
 - C compiler (for liboqs)
+- CMake 3.5 or higher
 
 ## Dependencies
 
@@ -18,7 +19,7 @@ PQFE requires the following main dependencies:
 1. Install system dependencies (Ubuntu/Debian):
 ```bash
 sudo apt update
-sudo apt install build-essential cmake ninja-build
+sudo apt install build-essential cmake
 ```
 
 2. Clone the repository:
