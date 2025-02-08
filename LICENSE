@@ -1,6 +1,10 @@
 MIT License
 
 Copyright (c) 2025 Ernesto Sola-Thomas
+Portions Copyright (c) 2016-2024 The Open Quantum Safe project authors
+
+This project includes code from liboqs (https://github.com/open-quantum-safe/liboqs)
+which is also licensed under the MIT License.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
