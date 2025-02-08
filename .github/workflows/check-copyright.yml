@@ -1,0 +1,55 @@
+name: Check Copyright Headers
+
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  check-copyright:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Get modified files
+        id: changed-files
+        uses: tj-actions/changed-files@v41
+
+      - name: Check copyright headers
+        run: |
+          #!/bin/bash
+          
+          EXIT_CODE=0
+          PRIMARY_HEADER="Copyright (c) 2025 Ernesto Sola-Thomas"
+          LIBOQS_HEADER="Copyright (c) 2016-2024 The Open Quantum Safe project authors"
+          
+          for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
+            # Skip if file doesn't exist (was deleted)
+            [ ! -f "$file" ] && continue
+            
+            # Skip binary files, specific file types, and common configuration files
+            if file "$file" | grep -q "text" && \
+               [[ ! "$file" =~ \.(gitignore|env|lock|json|yml|yaml|md)$ ]] && \
+               [[ ! "$file" =~ ^\.git/ ]]; then
+              
+              # Check if file is in liboqs directory
+              if [[ "$file" =~ ^external/liboqs/ ]]; then
+                if ! grep -q "$LIBOQS_HEADER" "$file"; then
+                  echo "❌ Missing liboqs copyright header in: $file"
+                  EXIT_CODE=1
+                else
+                  echo "✅ Found liboqs copyright header in: $file"
+                fi
+              else
+                if ! grep -q "$PRIMARY_HEADER" "$file"; then
+                  echo "❌ Missing primary copyright header in: $file"
+                  EXIT_CODE=1
+                else
+                  echo "✅ Found primary copyright header in: $file"
+                fi
+              fi
+            fi
+          done
+          
+          exit $EXIT_CODE 
