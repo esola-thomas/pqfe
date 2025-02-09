@@ -11,7 +11,7 @@ import logging
 
 from src import key_management
 
-LOGGING_ENABLED = True  # Set this to False to disable logging
+LOGGING_ENABLED = os.getenv('LOGGING_ENABLED', 'True').lower() == 'true'
 
 if LOGGING_ENABLED:
     logging.basicConfig(level=logging.DEBUG)
