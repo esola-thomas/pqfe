@@ -10,12 +10,12 @@ RUN apt-get update && \
     git clone --depth=1 https://github.com/open-quantum-safe/liboqs && \
     git clone --depth=1 https://github.com/open-quantum-safe/liboqs-python
 
-RUN cd liboqs && cmake -S liboqs -B liboqs/build -DBUILD_SHARED_LIBS=ON && \
+RUN cmake -S liboqs -B liboqs/build -DBUILD_SHARED_LIBS=ON && \
     cmake --build liboqs/build --parallel 8 && \
     cmake --build liboqs/build --target install && \
     echo "/usr/local/lib" > /etc/ld.so.conf.d/liboqs.conf && \
     ldconfig && \
-    cd ../liboqs-python && \
+    cd liboqs-python && \
     pip install . && \
     python -c "import oqs; print('oqs installed successfully')" && \
     apt-get remove -y git cmake build-essential && \
