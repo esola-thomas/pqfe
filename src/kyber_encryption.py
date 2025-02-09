@@ -36,7 +36,10 @@ class KyberEncryption:
         Returns:
             Tuple[bytes, bytes]: (public_key, private_key)
         """
-        raise NotImplementedError("Method not implemented yet")
+        with oqs.KeyEncapsulation(self.variant) as kem:
+            public_key = kem.generate_keypair()
+            private_key = kem.export_secret_key()
+        return public_key, private_key
 
     def encrypt_file(self, input_file: str, public_key: Optional[bytes] = None) -> Dict[str, Any]:
         """

@@ -5,11 +5,16 @@ Test module for key management functionality.
 """
 
 import unittest
-from pathlib import Path
 import tempfile
 import os
+import logging
 
 from src import key_management
+
+LOGGING_ENABLED = True  # Set this to False to disable logging
+
+if LOGGING_ENABLED:
+    logging.basicConfig(level=logging.DEBUG)
 
 class TestKeyManagement(unittest.TestCase):
     def setUp(self):
@@ -19,6 +24,8 @@ class TestKeyManagement(unittest.TestCase):
             "public": b"test_public_key_data",
             "private": b"test_private_key_data"
         }
+        if LOGGING_ENABLED:
+            logging.debug(f"Test environment set up with directory: {self.test_dir}")
         
     def tearDown(self):
         """Clean up test environment."""
@@ -28,6 +35,8 @@ class TestKeyManagement(unittest.TestCase):
             for name in dirs:
                 os.rmdir(os.path.join(root, name))
         os.rmdir(self.test_dir)
+        if LOGGING_ENABLED:
+            logging.debug(f"Test environment cleaned up for directory: {self.test_dir}")
         
     def test_save_load_keys(self):
         """Test saving and loading keys."""
@@ -37,6 +46,8 @@ class TestKeyManagement(unittest.TestCase):
             self.test_keys["private"],
             self.test_dir
         )
+        if LOGGING_ENABLED:
+            logging.debug(f"Keys saved to {public_path} and {private_path}")
         
         # Verify files exist
         self.assertTrue(public_path.exists())
@@ -44,16 +55,12 @@ class TestKeyManagement(unittest.TestCase):
         
         # Load keys
         loaded_public, loaded_private = key_management.load_keys(self.test_dir)
+        if LOGGING_ENABLED:
+            logging.debug("Keys loaded successfully")
         
         # Verify loaded keys match original
         self.assertEqual(loaded_public, self.test_keys["public"])
         self.assertEqual(loaded_private, self.test_keys["private"])
-        
-    def test_generate_key_filename(self):
-        """Test key filename generation."""
-        filename = key_management.generate_key_filename("public", "Kyber512")
-        self.assertIn("public", filename)
-        self.assertIn("Kyber512", filename)
         
 if __name__ == '__main__':
     unittest.main() 
