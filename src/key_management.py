@@ -11,7 +11,8 @@ import json
 import base64
 import oqs 
 
-def save_keys(public_key: bytes, private_key: bytes, directory: str) -> Tuple[Path, Path]:
+def save_keys(public_key: bytes, private_key: bytes, directory: str, 
+              pub_filename: str = "key.pub.bin", priv_filename: str = "key.bin") -> Tuple[Path, Path]:
     """
     Save public and private keys to files.
     
@@ -19,13 +20,27 @@ def save_keys(public_key: bytes, private_key: bytes, directory: str) -> Tuple[Pa
         public_key (bytes): Public key to save
         private_key (bytes): Private key to save
         directory (str): Directory to save keys in
+        pub_filename (str, optional): Filename for public key. Defaults to "key.pub.bin"
+        priv_filename (str, optional): Filename for private key. Defaults to "key.bin"
         
     Returns:
         Tuple[Path, Path]: Paths to saved public and private key files
     """
-    raise NotImplementedError("Method not implemented yet")
+    # Create directory if it doesn't exist
+    dir_path = Path(directory)
+    dir_path.mkdir(parents=True, exist_ok=True)
+    
+    # Create paths for key files
+    pub_path = dir_path / pub_filename
+    priv_path = dir_path / priv_filename
+    
+    # Write keys to files
+    pub_path.write_bytes(public_key)
+    priv_path.write_bytes(private_key)
+    
+    return pub_path, priv_path
 
-def load_keys(directory: str) -> Tuple[Optional[bytes], Optional[bytes]]:
+def load_keys(directory: str, pub_filename: str = "key.pub.bin", priv_filename: str = "key.bin") -> Tuple[Optional[bytes], Optional[bytes]]:
     """
     Load public and private keys from files.
     
@@ -35,17 +50,19 @@ def load_keys(directory: str) -> Tuple[Optional[bytes], Optional[bytes]]:
     Returns:
         Tuple[Optional[bytes], Optional[bytes]]: Loaded public and private keys
     """
-    raise NotImplementedError("Method not implemented yet")
-
-def generate_key_filename(key_type: str, variant: str) -> str:
-    """
-    Generate standardized filename for key storage.
+    dir_path = Path(directory)
+    pub_path = dir_path / pub_filename
+    priv_path = dir_path / priv_filename
     
-    Args:
-        key_type (str): Type of key ('public' or 'private')
-        variant (str): Kyber variant used
+    # Check if both key files exist
+    if not pub_path.exists() or not priv_path.exists():
+        return None, None
         
-    Returns:
-        str: Generated filename
-    """
-    raise NotImplementedError("Method not implemented yet") 
+    try:
+        # Read keys from files
+        public_key = pub_path.read_bytes()
+        private_key = priv_path.read_bytes()
+        return public_key, private_key
+    except Exception as e:
+        print(f"Error loading keys: {str(e)}")
+        return None, None
