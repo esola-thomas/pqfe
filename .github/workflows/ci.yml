@@ -1,0 +1,22 @@
+name: Run tests
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Pull Docker image
+        run: docker pull ernessola/pqfe:latest
+
+      - name: Run tests in container
+        uses: actions/checkout@v3
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}:/workspace \
+            ernessola/Post-Quantum-File-Encryption:latest \
+            python -m pytest /workspace/test
