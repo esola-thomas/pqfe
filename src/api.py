@@ -36,7 +36,7 @@ class PQFE:
         Returns:
             Dict containing encryption results
         """
-        raise NotImplementedError("Method not implemented yet")
+        return self.encryptor.encrypt_file(file_path, public_key)
         
     def decrypt_file(
         self,
@@ -55,7 +55,14 @@ class PQFE:
         Returns:
             str: Path to decrypted file
         """
-        raise NotImplementedError("Method not implemented yet")
+        if private_key is None:
+            raise ValueError("Private key is required for decryption.")
+        decrypted_content = self.encryptor.decrypt_file(encrypted_file, private_key)
+        if output_path is None:
+            output_path = encrypted_file.replace('.enc', '')
+        with open(output_path, 'wb') as f:
+            f.write(decrypted_content)
+        return output_path
         
     def generate_keys(self) -> Tuple[bytes, bytes]:
         """
@@ -64,7 +71,14 @@ class PQFE:
         Returns:
             Tuple[bytes, bytes]: (public_key, private_key)
         """
-        raise NotImplementedError("Method not implemented yet")
+        public_key, private_key = self.encryptor.generate_keypair()
+        key_dir = Path(self.key_directory)
+        key_dir.mkdir(parents=True, exist_ok=True)
+        with open(key_dir / 'public_key.pem', 'wb') as f:
+            f.write(public_key)
+        with open(key_dir / 'private_key.pem', 'wb') as f:
+            f.write(private_key)
+        return public_key, private_key
         
     def load_keys(self) -> Tuple[Optional[bytes], Optional[bytes]]:
         """
@@ -73,4 +87,12 @@ class PQFE:
         Returns:
             Tuple[Optional[bytes], Optional[bytes]]: (public_key, private_key)
         """
-        raise NotImplementedError("Method not implemented yet") 
+        key_dir = Path(self.key_directory)
+        try:
+            with open(key_dir / 'public_key.pem', 'rb') as f:
+                public_key = f.read()
+            with open(key_dir / 'private_key.pem', 'rb') as f:
+                private_key = f.read()
+            return public_key, private_key
+        except FileNotFoundError:
+            return None, None 
