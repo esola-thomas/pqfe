@@ -1,3 +1,9 @@
+# Copyright (c) 2025 Ernesto Sola-Thomas
+
+"""
+Test module for Kyber encryption functionality.
+"""
+
 import unittest
 import logging
 import os
