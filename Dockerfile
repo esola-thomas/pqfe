@@ -1,3 +1,4 @@
+# Copyright (c) 2025 Ernesto Sola-Thomas
 
 FROM python:3.10.16
 
