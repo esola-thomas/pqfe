@@ -7,6 +7,7 @@ Implements core encryption and decryption functionality using liboqs.
 
 from typing import Tuple, Dict, Any, Optional
 import oqs
+from .file_ops import read_file, write_encrypted_file, read_encrypted_file
 
 class KyberEncryption:
     """Main class for Kyber-based encryption operations"""
@@ -52,7 +53,24 @@ class KyberEncryption:
         Returns:
             Dict containing encrypted_file_path, ciphertext, and shared_secret
         """
-        raise NotImplementedError("Method not implemented yet")
+        if public_key is None:
+            raise ValueError("Public key is required for encryption.")
+
+        # Read the file content
+        file_content = read_file(input_file)
+
+        # Encrypt the file content
+        with oqs.KeyEncapsulation(self.variant) as kem:
+            ciphertext, shared_secret = kem.encap_secret(public_key)
+
+        # Write the encrypted content to a file
+        encrypted_file_path = write_encrypted_file(input_file, file_content, ciphertext, {'shared_secret': shared_secret.hex()})
+
+        return {
+            'encrypted_file_path': encrypted_file_path,
+            'ciphertext': ciphertext,
+            'shared_secret': shared_secret
+        }
 
     def decrypt_file(self, encrypted_file: str, private_key: bytes) -> bytes:
         """
@@ -65,4 +83,15 @@ class KyberEncryption:
         Returns:
             bytes: Decrypted content
         """
-        raise NotImplementedError("Method not implemented yet") 
+        # Read the encrypted file content
+        encrypted_content, ciphertext, metadata = read_encrypted_file(encrypted_file)
+
+        # Decrypt the content
+        with oqs.KeyEncapsulation(self.variant, private_key) as kem:
+            shared_secret = kem.decap_secret(ciphertext)
+
+        # Verify the shared secret
+        if shared_secret.hex() != metadata['shared_secret']:
+            raise ValueError("Shared secret does not match. Decryption failed.")
+
+        return encrypted_content 
