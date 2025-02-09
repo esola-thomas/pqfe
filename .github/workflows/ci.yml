@@ -5,18 +5,30 @@ on:
   push:
     branches:
       - main
-
+  workflow_dispatch:
 jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Pull Docker image
-        run: docker pull ernessola/pqfe:latest
+    test:
+      runs-on: ubuntu-latest
+      steps:
+        - uses: actions/checkout@v3
 
-      - name: Run tests in container
-        uses: actions/checkout@v3
-        run: |
-          docker run --rm \
-            -v ${{ github.workspace }}:/workspace \
-            ernessola/Post-Quantum-File-Encryption:latest \
-            python -m pytest /workspace/test
+        - name: Cache Docker layers
+          uses: actions/cache@v3
+          with:
+            path: /tmp/.buildx-cache
+            key: ${{ runner.os }}-buildx-${{ github.sha }}
+            restore-keys: |
+              ${{ runner.os }}-buildx-
+
+        - name: Pull Docker image
+          run: docker pull ernessola/pqfe:latest
+
+        - name: Run tests in container
+          continue-on-error: false
+          env:
+            NO_CACHE: ${{ github.event.number }}_${{ github.run_id }}_${{ github.run_attempt }}
+          run: |
+            docker run --rm \
+              -v ${{ github.workspace }}:/workspace \
+              ernessola/pqfe:latest \
+              python -m pytest /workspace/test
