@@ -10,6 +10,7 @@ RUN apt-get update && \
     git clone --depth=1 https://github.com/open-quantum-safe/liboqs-python .
 
 RUN pip install . && \
+    python -c "import oqs; print('oqs installed successfully')" && \
     apt-get remove -y git && \
     apt-get autoremove -y && \
     rm -rf /var/lib/apt/lists/*
