@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Pull Docker image
-        run: docker pull ernessola/Post-Quantum-File-Encryption:latest
+        run: docker pull ernessola/pqfe:latest
 
       - name: Run tests in container
         uses: actions/checkout@v3
