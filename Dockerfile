@@ -4,13 +4,13 @@
 ARG LIBOQS_BUILD_DEFINES="-DOQS_DIST_BUILD=ON -DBUILD_SHARED_LIBS=ON -DOQS_USE_OPENSSL=OFF"
 ARG MAKE_DEFINES="-j 2"
 
-FROM python:3.10-slim-bullseye as intermediate
+FROM python:3.10-slim-bullseye AS intermediate
 ARG LIBOQS_BUILD_DEFINES
 ARG MAKE_DEFINES
 
 LABEL version="2"
 
-ENV DEBIAN_FRONTEND noninteractive
+ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && apt-get upgrade -y
 
@@ -51,7 +51,7 @@ COPY --from=intermediate /opt/liboqs-python /opt/liboqs-python
 ENV PYTHONPATH=/opt/liboqs-python
 
 # Install liboqs-python
-RUN cd /opt/liboqs-python && python setup.py install
+RUN cd /opt/liboqs-python && pip install .
 
 # Enable a normal user 
 RUN useradd -m -u 1000 -s /bin/bash oqs
