@@ -9,6 +9,7 @@ from typing import Tuple, Optional
 from pathlib import Path
 import json
 import base64
+import oqs 
 
 def save_keys(public_key: bytes, private_key: bytes, directory: str) -> Tuple[Path, Path]:
     """
