@@ -1,3 +1,9 @@
+# Copyright (c) 2025 Ernesto Sola-Thomas
+
+"""
+Test module for API functionality.
+"""
+
 import unittest
 from pathlib import Path
 import tempfile
