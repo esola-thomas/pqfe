@@ -62,4 +62,4 @@ COPY --from=intermediate /opt/isrgrootx1.pem /home/oqs/isrgrootx1.pem
 
 # ensure oqs libs are found
 ENV LD_LIBRARY_PATH=/usr/local/lib64
-CMD ["python"]
+CMD ["tail", "-f", "/dev/null"]
