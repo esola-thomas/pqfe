@@ -8,6 +8,8 @@ Implements core encryption and decryption functionality using liboqs.
 from typing import Tuple, Dict, Any, Optional
 import oqs
 from .file_ops import read_file, write_encrypted_file, read_encrypted_file
+from cryptography.fernet import Fernet
+from base64 import urlsafe_b64encode
 
 class KyberEncryption:
     """Main class for Kyber-based encryption operations"""
@@ -41,7 +43,6 @@ class KyberEncryption:
             public_key = kem.generate_keypair()
             private_key = kem.export_secret_key()
         return public_key, private_key
-
     def encrypt_file(self, input_file: str, public_key: Optional[bytes] = None) -> Dict[str, Any]:
         """
         Encrypt a file using Kyber.
@@ -59,12 +60,26 @@ class KyberEncryption:
         # Read the file content
         file_content = read_file(input_file)
 
-        # Encrypt the file content
+        # Generate shared secret using Kyber
         with oqs.KeyEncapsulation(self.variant) as kem:
             ciphertext, shared_secret = kem.encap_secret(public_key)
 
+        # Use the shared secret to encrypt the file content
+        
+        # Derive a Fernet key from the shared secret
+        fernet_key = urlsafe_b64encode(shared_secret[:32])
+        f = Fernet(fernet_key)
+        
+        # Encrypt the actual file content
+        encrypted_content = f.encrypt(file_content)
+
         # Write the encrypted content to a file
-        encrypted_file_path = write_encrypted_file(input_file, file_content, ciphertext, {'shared_secret': shared_secret.hex()})
+        encrypted_file_path = write_encrypted_file(
+            input_file, 
+            encrypted_content,
+            ciphertext, 
+            {'shared_secret': shared_secret.hex()}
+        )
 
         return {
             'encrypted_file_path': encrypted_file_path,
