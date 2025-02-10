@@ -30,6 +30,7 @@ RUN apt update && apt install -y\
     git \
     vim \
     tree \
+    ninja-build \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
