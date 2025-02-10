@@ -9,7 +9,7 @@ from pathlib import Path
 import tempfile
 import os
 import logging
-from external.pqfe.src.api import PQFE
+from src.api import PQFE
 
 LOGGING_ENABLED = os.getenv('LOGGING_ENABLED', 'True').lower() == 'true'
 
@@ -60,13 +60,13 @@ class TestPQFE(unittest.TestCase):
         if LOGGING_ENABLED:
             logging.debug("Generated keys for encryption test")
             
-        result = self.pqfe.encrypt_file(str(self.test_file), public_key)
-        self.assertIn('encrypted_file_path', result)
-        self.assertTrue(Path(result['encrypted_file_path']).exists())
+        encrypt_result = self.pqfe.encrypt_file(str(self.test_file), public_key)
+        self.assertIn('encrypted_file_path', encrypt_result)
+        self.assertTrue(Path(encrypt_result['encrypted_file_path']).exists())
         if LOGGING_ENABLED:
-            logging.debug(f"File encrypted to: {result['encrypted_file_path']}")
+            logging.debug(f"File encrypted to: {encrypt_result['encrypted_file_path']}")
 
-        decrypted_path = self.pqfe.decrypt_file(result['encrypted_file_path'], private_key, str(self.decrypted_file))
+        decrypted_path = self.pqfe.decrypt_file(encrypt_result['encrypted_file_path'], encrypt_result['ciphertext'], private_key, str(self.decrypted_file))
         self.assertTrue(Path(decrypted_path).exists())
         if LOGGING_ENABLED:
             logging.debug(f"File decrypted to: {decrypted_path}")

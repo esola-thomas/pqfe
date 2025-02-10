@@ -7,8 +7,8 @@ Test module for Kyber encryption functionality.
 import unittest
 import logging
 import os
-from external.pqfe.src.kyber_encryption import KyberEncryption
-from external.pqfe.src.file_ops import read_file, write_decrypted_file
+from src.kyber_encryption import KyberEncryption
+from src.file_ops import read_file, write_decrypted_file
 
 # Configure logging
 LOGGING_ENABLED = os.getenv('LOGGING_ENABLED', 'True').lower() == 'true'

@@ -80,7 +80,7 @@ RUN mkdir lib && cd lib && cmake -GNinja .. ${LIBOQS_BUILD_DEFINES} && ninja ins
 WORKDIR /opt
 RUN git clone --depth 1 --branch OQS-OpenSSL_1_1_1-stable https://github.com/open-quantum-safe/openssl.git && cd liboqs && mkdir build-openssl && cd build-openssl && cmake -G"Ninja" .. ${LIBOQS_BUILD_DEFINES} -DCMAKE_INSTALL_PREFIX=/opt/openssl/oqs && ninja install
 RUN apt update && apt install -y automake autoconf && cd /opt/openssl && LDFLAGS="-Wl,-rpath -Wl,/usr/local/lib64" ./Configure shared linux-x86_64 -lm && make -j 2 && make install_sw
-RUN cd liboqs-python && pip install . && pip install pytest
+RUN cd liboqs-python && pip install . && pip install pytest cryptography
 
 WORKDIR /ws
 

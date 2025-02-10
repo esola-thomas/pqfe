@@ -34,13 +34,17 @@ class PQFE:
             public_key (Optional[bytes]): Public key for encryption
             
         Returns:
-            Dict containing encryption results
+            Dict containing:
+            - encrypted_file_path (str): Path to the encrypted file
+            - ciphertext (bytes): The Kyber ciphertext
+            - shared_secret (bytes): The shared secret derived from key encapsulation
         """
         return self.encryptor.encrypt_file(file_path, public_key)
         
     def decrypt_file(
         self,
         encrypted_file: str,
+        ciphertext: bytes,
         private_key: Optional[bytes] = None,
         output_path: Optional[str] = None
     ) -> str:
@@ -49,6 +53,7 @@ class PQFE:
         
         Args:
             encrypted_file (str): Path to encrypted file
+            ciphertext (bytes): The Kyber ciphertext from encryption
             private_key (Optional[bytes]): Private key for decryption
             output_path (Optional[str]): Custom output path
             
@@ -57,7 +62,7 @@ class PQFE:
         """
         if private_key is None:
             raise ValueError("Private key is required for decryption.")
-        decrypted_content = self.encryptor.decrypt_file(encrypted_file, private_key)
+        decrypted_content = self.encryptor.decrypt_file(encrypted_file, private_key, ciphertext)
         if output_path is None:
             output_path = encrypted_file.replace('.enc', '')
         with open(output_path, 'wb') as f:

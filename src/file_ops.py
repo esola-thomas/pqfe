@@ -36,18 +36,14 @@ def read_file(file_path: str) -> bytes:
 
 def write_encrypted_file(
     file_path: str,
-    encrypted_content: bytes,
-    ciphertext: bytes,
-    metadata: dict
+    encrypted_content: bytes
 ) -> str:
     """
-    Write encrypted content to file with metadata.
+    Write encrypted content to file.
     
     Args:
         file_path (str): Original file path
         encrypted_content (bytes): Encrypted file content
-        ciphertext (bytes): Encryption ciphertext
-        metadata (dict): Additional metadata to store
         
     Returns:
         str: Path to the encrypted file
@@ -55,27 +51,20 @@ def write_encrypted_file(
     encrypted_file_path = f"{file_path}.enc"
     with open(encrypted_file_path, 'wb') as f:
         f.write(encrypted_content)
-        # Assuming metadata and ciphertext are stored in a JSON format
-        f.write(b'\n')  # Newline to separate content and metadata
-        f.write(json.dumps({'ciphertext': ciphertext.hex(), 'metadata': metadata}).encode())
     return encrypted_file_path
 
-def read_encrypted_file(encrypted_file: str) -> Tuple[bytes, bytes, dict]:
+def read_encrypted_file(encrypted_file: str) -> bytes:
     """
-    Read encrypted file and extract content, ciphertext, and metadata.
+    Read encrypted file content.
     
     Args:
         encrypted_file (str): Path to encrypted file
         
     Returns:
-        Tuple[bytes, bytes, dict]: (encrypted_content, ciphertext, metadata)
+        bytes: encrypted content
     """
     with open(encrypted_file, 'rb') as f:
-        content = f.read()
-        encrypted_content, metadata_json = content.split(b'\n', 1)
-        metadata = json.loads(metadata_json)
-        ciphertext = bytes.fromhex(metadata['ciphertext'])
-    return encrypted_content, ciphertext, metadata['metadata']
+        return f.read()
 
 def write_decrypted_file(
     encrypted_file: str,
