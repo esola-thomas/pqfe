@@ -1,3 +1,5 @@
+# Copyright (c) 2025 Ernesto Sola-Thomas
+
 # Use Ubuntu as the base image
 FROM ubuntu:25.04
 ARG PYTHON_VERSION=3.10.16
