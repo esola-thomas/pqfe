@@ -66,6 +66,7 @@ RUN python -m pip install --upgrade pip
 ENV DOCKER_ENV=1
 ENV PROJECT_PATH=/ws
 ENV OQS_INSTALL_PATH=/opt/liboqs/lib
+ENV LD_LIBRARY_PATH=/opt/liboqs/lib
 
 # Clone the private repository using the PAT
 WORKDIR /opt
@@ -74,7 +75,7 @@ RUN git clone --depth 1 --branch main https://github.com/open-quantum-safe/liboq
 
 # build liboqs 
 WORKDIR /opt/liboqs
-RUN mkdir build && cd build && cmake -GNinja .. ${LIBOQS_BUILD_DEFINES} && ninja install
+RUN mkdir lib && cd lib && cmake -GNinja .. ${LIBOQS_BUILD_DEFINES} && ninja install
 
 WORKDIR /opt
 RUN git clone --depth 1 --branch OQS-OpenSSL_1_1_1-stable https://github.com/open-quantum-safe/openssl.git && cd liboqs && mkdir build-openssl && cd build-openssl && cmake -G"Ninja" .. ${LIBOQS_BUILD_DEFINES} -DCMAKE_INSTALL_PREFIX=/opt/openssl/oqs && ninja install
