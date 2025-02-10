@@ -55,6 +55,12 @@ RUN echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.zshrc && \
 ENV PYENV_ROOT="/root/.pyenv"
 ENV PATH="$PYENV_ROOT/bin:$PYENV_ROOT/shims:$PATH"
 RUN eval "$(pyenv init --path)"
+# Install Python
+RUN pyenv install ${PYTHON_VERSION} && \
+    pyenv global ${PYTHON_VERSION}
+
+# Upgrade pip
+RUN python -m pip install --upgrade pip
 
 # Add a build argument for the PAT
 ENV DOCKER_ENV=1
