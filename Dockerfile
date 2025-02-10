@@ -30,7 +30,6 @@ RUN apt update && apt install -y\
     git \
     vim \
     tree \
-    build-base \
     linux-headers \
     ninja \
     && apt-get clean \
