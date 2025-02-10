@@ -30,8 +30,8 @@ jobs:
             
             # Skip binary files, specific file types, and common configuration files
             if file "$file" | grep -q "text" && \
-               [[ ! "$file" =~ \.(gitignore|env|lock|json|yml|yaml|md|requirements.txt)$ ]] && \
-               [[ ! "$file" =~ ^\.git/ ]]; then
+                     [[ ! "$file" =~ \.(gitignore|env|lock|json|yml|yaml|md|txt)$ ]] && \
+                     [[ ! "$file" =~ ^\.git/ ]]; then
               
               # Check if file is in liboqs directory
               if [[ "$file" =~ ^external/liboqs/ ]]; then

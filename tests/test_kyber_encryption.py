@@ -7,8 +7,8 @@ Test module for Kyber encryption functionality.
 import unittest
 import logging
 import os
-from external.pqfe.src.kyber_encryption import KyberEncryption
-from external.pqfe.src.file_ops import read_file, write_decrypted_file
+from src.kyber_encryption import KyberEncryption
+from src.file_ops import read_file, write_decrypted_file
 
 # Configure logging
 LOGGING_ENABLED = os.getenv('LOGGING_ENABLED', 'True').lower() == 'true'
@@ -44,8 +44,11 @@ class TestKyberEncryption(unittest.TestCase):
         self.assertIsInstance(private_key, bytes)
         logging.debug('Key pair generated.')
 
-    def test_encrypt_file(self):
-        public_key, _ = self.kyber.generate_keypair()
+    def test_encrypt_decrypt_file(self):
+        # Generate keypair
+        public_key, private_key = self.kyber.generate_keypair()
+        
+        # Encrypt the file
         result = self.kyber.encrypt_file(self.sample_file, public_key)
         self.assertIn('encrypted_file_path', result)
         self.assertIn('ciphertext', result)
@@ -53,10 +56,8 @@ class TestKyberEncryption(unittest.TestCase):
         self.assertTrue(os.path.exists(result['encrypted_file_path']))
         logging.debug('File encrypted successfully.')
 
-    def test_decrypt_file(self):
-        public_key, private_key = self.kyber.generate_keypair()
-        self.kyber.encrypt_file(self.sample_file, public_key)
-        decrypted_content = self.kyber.decrypt_file(self.encrypted_file, private_key)
+        # Decrypt the file
+        decrypted_content = self.kyber.decrypt_file(self.encrypted_file, private_key, result['ciphertext'])
         original_content = read_file(self.sample_file)
         self.assertEqual(decrypted_content, original_content)
         logging.debug('File decrypted successfully.')

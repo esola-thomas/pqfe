@@ -67,7 +67,7 @@ class TestKyberEncryption(unittest.TestCase):
             logging.debug("Encryption result verified")
         
         # Decrypt and verify
-        decrypted = self.encryptor.decrypt_file(result["encrypted_file_path"], private_key)
+        decrypted = self.encryptor.decrypt_file(result["encrypted_file_path"], private_key, result["ciphertext"])
         self.assertEqual(decrypted, test_content)
         if LOGGING_ENABLED:
             logging.debug("File decrypted and content verified")

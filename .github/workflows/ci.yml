@@ -29,6 +29,6 @@ jobs:
             NO_CACHE: ${{ github.event.number }}_${{ github.run_id }}_${{ github.run_attempt }}
           run: |
             docker run --rm \
-              -v ${{ github.workspace }}:/workspace \
+              -v ${{ github.workspace }}:/ws \
               ernessola/pqfe:latest \
-              python -m pytest /workspace/test
+              python -m pytest /ws/tests

@@ -76,9 +76,7 @@ class KyberEncryption:
         # Write the encrypted content to a file
         encrypted_file_path = write_encrypted_file(
             input_file, 
-            encrypted_content,
-            ciphertext, 
-            {'shared_secret': shared_secret.hex()}
+            encrypted_content
         )
 
         return {
@@ -87,26 +85,30 @@ class KyberEncryption:
             'shared_secret': shared_secret
         }
 
-    def decrypt_file(self, encrypted_file: str, private_key: bytes) -> bytes:
+    def decrypt_file(self, encrypted_file: str, private_key: bytes, ciphertext: bytes) -> bytes:
         """
         Decrypt a file using Kyber.
         
         Args:
             encrypted_file (str): Path to the encrypted file
             private_key (bytes): Private key for decryption
-            
+            ciphertext (bytes): The encrypted message/ciphertext to decrypt
+                
         Returns:
             bytes: Decrypted content
         """
         # Read the encrypted file content
-        encrypted_content, ciphertext, metadata = read_encrypted_file(encrypted_file)
+        encrypted_content = read_encrypted_file(encrypted_file)
 
         # Decrypt the content
         with oqs.KeyEncapsulation(self.variant, private_key) as kem:
             shared_secret = kem.decap_secret(ciphertext)
 
-        # Verify the shared secret
-        if shared_secret.hex() != metadata['shared_secret']:
-            raise ValueError("Shared secret does not match. Decryption failed.")
+        # Derive the same Fernet key from shared secret
+        fernet_key = urlsafe_b64encode(shared_secret[:32])
+        f = Fernet(fernet_key)
+        
+        # Decrypt the file content
+        decrypted_content = f.decrypt(encrypted_content)
 
-        return encrypted_content 
+        return decrypted_content
