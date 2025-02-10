@@ -31,4 +31,4 @@ jobs:
             docker run --rm \
               -v ${{ github.workspace }}:/workspace \
               ernessola/pqfe:latest \
-              python -m pytest /workspace/test
+              python -m pytest /ws/tests
