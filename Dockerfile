@@ -42,10 +42,11 @@ RUN wget https://letsencrypt.org/certs/isrgrootx1.pem
 FROM python:3.10-slim-bullseye
 
 # Get required packages
-RUN apt-get update && apt-get upgrade -y
+RUN apt-get update && apt-get upgrade -y && pip install pytest
 
 # Copy built artifacts
 COPY --from=intermediate /usr/local /usr/local
+COPY --from=intermediate /opt/openssl/oqs /opt/oqs
 COPY --from=intermediate /opt/liboqs-python /opt/liboqs-python
 
 ENV PYTHONPATH=/opt/liboqs-python
@@ -61,5 +62,5 @@ WORKDIR /home/oqs
 COPY --from=intermediate /opt/isrgrootx1.pem /home/oqs/isrgrootx1.pem
 
 # ensure oqs libs are found
-ENV LD_LIBRARY_PATH=/usr/local/lib64
+ENV LD_LIBRARY_PATH=/opt/oqs/lib
 CMD ["tail", "-f", "/dev/null"]
