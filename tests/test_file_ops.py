@@ -55,9 +55,7 @@ class TestFileOperations(unittest.TestCase):
         # Write encrypted file
         encrypted_path = file_ops.write_encrypted_file(
             str(self.test_file),
-            encrypted_content,
-            ciphertext,
-            metadata
+            encrypted_content
         )
         if LOGGING_ENABLED:
             logging.debug(f"Encrypted file written to {encrypted_path}")
@@ -66,14 +64,12 @@ class TestFileOperations(unittest.TestCase):
         self.assertTrue(os.path.exists(encrypted_path))
         
         # Read encrypted file
-        read_content, read_ciphertext, read_metadata = file_ops.read_encrypted_file(encrypted_path)
+        read_encripted_content = file_ops.read_encrypted_file(encrypted_path)
         if LOGGING_ENABLED:
             logging.debug("Encrypted file read successfully")
         
         # Verify contents
-        self.assertEqual(read_content, encrypted_content)
-        self.assertEqual(read_ciphertext, ciphertext)
-        self.assertEqual(read_metadata, metadata)
+        self.assertEqual(read_encripted_content, encrypted_content)
         
 if __name__ == '__main__':
     unittest.main() 
