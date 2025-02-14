@@ -30,4 +30,4 @@ jobs:
           push: true
           tags: |
             ${{ secrets.DOCKER_HUB_USERNAME }}/pqfe:latest
-            ghcr.io/${{ github.repository }}/pqfe:latest
+            ghcr.io/${{ github.repository }}:latest
