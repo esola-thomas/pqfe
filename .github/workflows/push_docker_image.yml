@@ -29,5 +29,5 @@ jobs:
           context: .
           push: true
           tags: |
-            ${{ secrets.DOCKER_HUB_USERNAME }}/pqfe:latest
+            ${{ secrets.DOCKER_HUB_USERNAME }}:latest
             ghcr.io/${{ github.repository }}:latest
