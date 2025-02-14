@@ -9,7 +9,7 @@ from pathlib import Path
 import tempfile
 import os
 import logging
-from external.pqfe.src.api import PQFE
+from src.api import PQFE
 
 LOGGING_ENABLED = os.getenv('LOGGING_ENABLED', 'True').lower() == 'true'
 
