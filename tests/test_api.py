@@ -19,27 +19,39 @@ if LOGGING_ENABLED:
 class TestPQFE(unittest.TestCase):
     def setUp(self):
         """Set up test environment."""
-        self.pqfe = PQFE()
         self.test_dir = tempfile.mkdtemp()
-        self.test_file = Path(self.test_dir) / "test.txt"
-        self.encrypted_file = Path(self.test_dir) / "test.txt.enc"
-        self.decrypted_file = Path(self.test_dir) / "test_decrypted.txt"
+        self.output_dir = tempfile.mkdtemp()
+        
+        # Configure PQFE instance with test directory for keys
+        self.key_dir = Path(self.test_dir) / "keys"
+        self.key_dir.mkdir(exist_ok=True)
+        self.pqfe = PQFE(
+            variant="Kyber512", 
+            key_directory=str(self.key_dir),
+            cipher="AES256GCM"
+        )
+        
         # Create a test file
-        self.test_file.write_text('This is a test file.')
+        self.test_file = Path(self.test_dir) / "test.txt"
+        self.test_content = "This is a test file."
+        self.test_file.write_text(self.test_content)
+        
         if LOGGING_ENABLED:
             logging.debug(f"Test environment set up with directory: {self.test_dir}")
+            logging.debug(f"Output directory set up: {self.output_dir}")
             logging.debug(f"Test file created at: {self.test_file}")
 
     def tearDown(self):
         """Clean up test environment."""
-        for root, dirs, files in os.walk(self.test_dir, topdown=False):
-            for name in files:
-                os.remove(os.path.join(root, name))
-            for name in dirs:
-                os.rmdir(os.path.join(root, name))
-        os.rmdir(self.test_dir)
+        for directory in [self.test_dir, self.output_dir]:
+            for root, dirs, files in os.walk(directory, topdown=False):
+                for name in files:
+                    os.remove(os.path.join(root, name))
+                for name in dirs:
+                    os.rmdir(os.path.join(root, name))
+            os.rmdir(directory)
         if LOGGING_ENABLED:
-            logging.debug(f"Test environment cleaned up for directory: {self.test_dir}")
+            logging.debug(f"Test environment cleaned up")
 
     def test_generate_and_load_keys(self):
         """Test key generation and loading."""
@@ -60,21 +72,103 @@ class TestPQFE(unittest.TestCase):
         if LOGGING_ENABLED:
             logging.debug("Generated keys for encryption test")
             
-        encrypt_result = self.pqfe.encrypt_file(str(self.test_file), public_key)
+        # Encrypt file with custom output location
+        encrypt_result = self.pqfe.encrypt_file(
+            str(self.test_file), 
+            public_key,
+            output_dir=self.output_dir,
+            output_filename="encrypted.bin"
+        )
+        
         self.assertIn('encrypted_file_path', encrypt_result)
-        self.assertTrue(Path(encrypt_result['encrypted_file_path']).exists())
+        encrypted_path = encrypt_result['encrypted_file_path']
+        self.assertTrue(os.path.exists(encrypted_path))
         if LOGGING_ENABLED:
-            logging.debug(f"File encrypted to: {encrypt_result['encrypted_file_path']}")
+            logging.debug(f"File encrypted to: {encrypted_path}")
 
-        decrypted_path = self.pqfe.decrypt_file(encrypt_result['encrypted_file_path'], encrypt_result['ciphertext'], private_key, str(self.decrypted_file))
-        self.assertTrue(Path(decrypted_path).exists())
+        # Decrypt file with custom output location
+        decrypt_result = self.pqfe.decrypt_file(
+            encrypted_path,
+            encrypt_result['ciphertext'],
+            private_key,
+            output_dir=self.output_dir,
+            output_filename="decrypted.txt"
+        )
+        
+        self.assertIn('decrypted_file_path', decrypt_result)
+        decrypted_path = decrypt_result['decrypted_file_path']
+        self.assertTrue(os.path.exists(decrypted_path))
         if LOGGING_ENABLED:
             logging.debug(f"File decrypted to: {decrypted_path}")
             
-        content = Path(decrypted_path).read_text()
-        self.assertEqual(content, 'This is a test file.')
+        # Verify content
+        with open(decrypted_path, 'r') as f:
+            content = f.read()
+        self.assertEqual(content, self.test_content)
         if LOGGING_ENABLED:
             logging.debug("Decrypted content verified")
+
+    def test_in_memory_operations(self):
+        """Test in-memory encryption and decryption."""
+        public_key, private_key = self.pqfe.generate_keys()
+        
+        # Encrypt file, return data in memory
+        encrypt_result = self.pqfe.encrypt_file(
+            str(self.test_file), 
+            public_key,
+            return_as_data=True
+        )
+        
+        self.assertIn('encrypted_data', encrypt_result)
+        self.assertIn('ciphertext', encrypt_result)
+        if LOGGING_ENABLED:
+            logging.debug("File encrypted in memory")
+
+        # Decrypt data in memory
+        decrypt_result = self.pqfe.decrypt_file(
+            str(self.test_file),  # This is just used for debugging
+            encrypt_result['ciphertext'],
+            private_key,
+            return_as_data=True
+        )
+        
+        self.assertIn('decrypted_data', decrypt_result)
+        decrypted_content = decrypt_result['decrypted_data']
+        
+        # Verify the decrypted content matches original
+        self.assertEqual(decrypted_content.decode('utf-8'), self.test_content)
+        if LOGGING_ENABLED:
+            logging.debug("In-memory decrypted content verified")
+    
+    def test_different_ciphers(self):
+        """Test different symmetric cipher options."""
+        for cipher in ["AES256GCM", "ChaCha20Poly1305"]:
+            with self.subTest(cipher=cipher):
+                pqfe = PQFE(
+                    variant="Kyber512", 
+                    key_directory=str(self.key_dir),
+                    cipher=cipher
+                )
+                
+                public_key, private_key = pqfe.generate_keys()
+                
+                # Test with this cipher
+                encrypt_result = pqfe.encrypt_file(
+                    str(self.test_file),
+                    public_key,
+                    return_as_data=True
+                )
+                
+                decrypt_result = pqfe.decrypt_file(
+                    str(self.test_file),
+                    encrypt_result['ciphertext'],
+                    private_key,
+                    return_as_data=True
+                )
+                
+                self.assertEqual(decrypt_result['decrypted_data'].decode('utf-8'), self.test_content)
+                if LOGGING_ENABLED:
+                    logging.debug(f"Encryption/decryption with {cipher} successful")
 
 if __name__ == '__main__':
     unittest.main()
