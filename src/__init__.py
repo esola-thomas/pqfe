@@ -1,4 +1,4 @@
-# __init__.py
+# Copyright (c) 2025 Ernesto Sola-Thomas
 """
 Post-Quantum File Encryption (PQFE) package.
 """
