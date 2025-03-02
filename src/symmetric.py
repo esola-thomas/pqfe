@@ -18,14 +18,20 @@ class SymmetricCipher(ABC):
         pass
 
 class AES256GCMCipher(SymmetricCipher):
+    """AES-256-GCM symmetric encryption cipher."""
+    
+    def __init__(self):
+        pass
+        
     def encrypt(self, data: bytes, key: bytes) -> bytes:
         if len(key) < 32:
             raise ValueError("Key must be at least 32 bytes for AES-256-GCM.")
-        aesgcm = AESGCM(key[:32])
         nonce = urandom(12)
-        ct = aesgcm.encrypt(nonce, data, None)
-        return nonce + ct
-
+        aesgcm = AESGCM(key[:32])
+        ciphertext = aesgcm.encrypt(nonce, data, None)
+        # Return nonce + ciphertext
+        return nonce + ciphertext
+        
     def decrypt(self, data: bytes, key: bytes) -> bytes:
         if len(key) < 32:
             raise ValueError("Key must be at least 32 bytes for AES-256-GCM.")
@@ -35,21 +41,27 @@ class AES256GCMCipher(SymmetricCipher):
         return aesgcm.decrypt(nonce, ct, None)
 
 class ChaCha20Poly1305Cipher(SymmetricCipher):
+    """ChaCha20-Poly1305 symmetric encryption cipher."""
+    
+    def __init__(self):
+        pass
+        
     def encrypt(self, data: bytes, key: bytes) -> bytes:
         if len(key) < 32:
             raise ValueError("Key must be at least 32 bytes for ChaCha20-Poly1305.")
-        cipher = ChaCha20Poly1305(key[:32])
         nonce = urandom(12)
-        ct = cipher.encrypt(nonce, data, None)
-        return nonce + ct
-
+        chacha = ChaCha20Poly1305(key[:32])
+        ciphertext = chacha.encrypt(nonce, data, None)
+        # Return nonce + ciphertext
+        return nonce + ciphertext
+        
     def decrypt(self, data: bytes, key: bytes) -> bytes:
         if len(key) < 32:
             raise ValueError("Key must be at least 32 bytes for ChaCha20-Poly1305.")
         nonce = data[:12]
         ct = data[12:]
-        cipher = ChaCha20Poly1305(key[:32])
-        return cipher.decrypt(nonce, ct, None)
+        chacha = ChaCha20Poly1305(key[:32])
+        return chacha.decrypt(nonce, ct, None)
 
 def get_cipher_instance(cipher_name: str) -> SymmetricCipher:
     """
