@@ -1,5 +1,4 @@
-# Copyright (c) 2025 Ernesto Sola-Thomas
-
+# utils.py
 """
 Utility functions for Post-Quantum File Encryption system.
 Provides helper functions used across modules.
@@ -12,7 +11,7 @@ from pathlib import Path
 
 def encode_bytes(data: bytes) -> str:
     """
-    Encode bytes to base64 string.
+    Encode bytes to a base64 string.
     
     Args:
         data (bytes): Data to encode
@@ -24,7 +23,7 @@ def encode_bytes(data: bytes) -> str:
 
 def decode_bytes(data: str) -> bytes:
     """
-    Decode base64 string to bytes.
+    Decode a base64 string to bytes.
     
     Args:
         data (str): Base64 encoded string
@@ -52,7 +51,13 @@ def create_metadata(
     Returns:
         Dict[str, Any]: Metadata dictionary
     """
-    raise NotImplementedError("Method not implemented yet")
+    metadata = {
+        "variant": variant,
+        "file_size": file_size,
+        "original_filename": original_filename
+    }
+    metadata.update(kwargs)
+    return metadata
 
 def ensure_directory(directory: str) -> Path:
     """
@@ -66,4 +71,4 @@ def ensure_directory(directory: str) -> Path:
     """
     path = Path(directory)
     path.mkdir(parents=True, exist_ok=True)
-    return path 
+    return path
