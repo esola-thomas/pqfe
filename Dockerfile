@@ -1,3 +1,4 @@
+# Copyright (c) 2025 Ernesto Sola-Thomas
 # Stage 1: Build dependencies
 FROM ubuntu:25.04 AS builder
 ARG PYTHON_VERSION=3.10.16

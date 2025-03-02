@@ -1,5 +1,4 @@
 # Copyright (c) 2025 Ernesto Sola-Thomas
-
 """
 Test module for API functionality.
 """
