@@ -102,7 +102,8 @@ class KyberEncryption:
         ciphertext: bytes,
         output_dir: Optional[str] = None,
         output_filename: Optional[str] = None,
-        return_as_data: bool = False
+        return_as_data: bool = False,
+        encrypted_data: Optional[bytes] = None  # NEW parameter
     ) -> Dict[str, Any]:
         """
         Decrypt a file using Kyber and a symmetric cipher.
@@ -114,12 +115,17 @@ class KyberEncryption:
             output_dir (Optional[str]): Directory to save the decrypted file; if None, use default behavior
             output_filename (Optional[str]): Custom filename for the decrypted file; defaults to removing '.enc'
             return_as_data (bool): If True, return decrypted content as bytes instead of writing to disk.
+            encrypted_data (Optional[bytes]): Directly supplied encrypted data (used for in-memory operations)
             
         Returns:
             Dict containing:
             - decrypted_file_path (str) if file written, or decrypted_data (bytes)
         """
-        encrypted_content = read_encrypted_file(encrypted_file)
+        # Use the provided encrypted data if available; otherwise, read from file
+        if encrypted_data is not None:
+            encrypted_content = encrypted_data
+        else:
+            encrypted_content = read_encrypted_file(encrypted_file)
 
         with oqs.KeyEncapsulation(self.variant, private_key) as kem:
             shared_secret = kem.decap_secret(ciphertext)

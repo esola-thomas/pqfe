@@ -111,31 +111,30 @@ class TestPQFE(unittest.TestCase):
     def test_in_memory_operations(self):
         """Test in-memory encryption and decryption."""
         public_key, private_key = self.pqfe.generate_keys()
-        
+
         # Encrypt file, return data in memory
         encrypt_result = self.pqfe.encrypt_file(
             str(self.test_file), 
             public_key,
             return_as_data=True
         )
-        
+
         self.assertIn('encrypted_data', encrypt_result)
         self.assertIn('ciphertext', encrypt_result)
         if LOGGING_ENABLED:
             logging.debug("File encrypted in memory")
 
-        # Decrypt data in memory
+        # Decrypt data in memory – pass encrypted_data explicitly!
         decrypt_result = self.pqfe.decrypt_file(
-            str(self.test_file),  # This is just used for debugging
+            str(self.test_file),  # This path is not used when encrypted_data is provided
             encrypt_result['ciphertext'],
             private_key,
-            return_as_data=True
+            return_as_data=True,
+            encrypted_data=encrypt_result['encrypted_data']
         )
-        
+
         self.assertIn('decrypted_data', decrypt_result)
         decrypted_content = decrypt_result['decrypted_data']
-        
-        # Verify the decrypted content matches original
         self.assertEqual(decrypted_content.decode('utf-8'), self.test_content)
         if LOGGING_ENABLED:
             logging.debug("In-memory decrypted content verified")
@@ -149,23 +148,24 @@ class TestPQFE(unittest.TestCase):
                     key_directory=str(self.key_dir),
                     cipher=cipher
                 )
-                
+
                 public_key, private_key = pqfe.generate_keys()
-                
-                # Test with this cipher
+
+                # Test with this cipher (in-memory)
                 encrypt_result = pqfe.encrypt_file(
                     str(self.test_file),
                     public_key,
                     return_as_data=True
                 )
-                
+
                 decrypt_result = pqfe.decrypt_file(
                     str(self.test_file),
                     encrypt_result['ciphertext'],
                     private_key,
-                    return_as_data=True
+                    return_as_data=True,
+                    encrypted_data=encrypt_result['encrypted_data']
                 )
-                
+
                 self.assertEqual(decrypt_result['decrypted_data'].decode('utf-8'), self.test_content)
                 if LOGGING_ENABLED:
                     logging.debug(f"Encryption/decryption with {cipher} successful")

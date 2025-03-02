@@ -61,9 +61,9 @@ class TestKyberEncryption(unittest.TestCase):
     
     def test_encrypt_decrypt_in_memory(self):
         public_key, private_key = self.kyber.generate_keypair()
-        
+
         result = self.kyber.encrypt_file(
-            self.sample_file, 
+            self.sample_file,
             public_key,
             return_as_data=True
         )
@@ -73,31 +73,35 @@ class TestKyberEncryption(unittest.TestCase):
         logging.debug('File encrypted in memory successfully.')
 
         decrypt_result = self.kyber.decrypt_file(
-            encrypted_file=self.sample_file,  # Used only for reference; actual encrypted content is read from file
-            private_key=private_key, 
+            encrypted_file=self.sample_file,  # not used when encrypted_data is provided
+            private_key=private_key,
             ciphertext=result['ciphertext'],
-            return_as_data=True
+            return_as_data=True,
+            encrypted_data=result['encrypted_data']  # pass the encrypted data
         )
         self.assertIn('decrypted_data', decrypt_result)
+        
         original_content = read_file(self.sample_file)
         self.assertEqual(decrypt_result['decrypted_data'], original_content)
         logging.debug('File decrypted in memory successfully.')
 
     def test_different_ciphers(self):
+        """Test both supported symmetric ciphers"""
         for cipher in ["AES256GCM", "ChaCha20Poly1305"]:
             with self.subTest(cipher=cipher):
                 kyber = KyberEncryption(variant="Kyber512", cipher=cipher)
-                
+
                 public_key, private_key = kyber.generate_keypair()
-                
+
                 result = kyber.encrypt_file(self.sample_file, public_key, return_as_data=True)
                 decrypt_result = kyber.decrypt_file(
                     self.sample_file,  
                     private_key, 
                     result['ciphertext'],
-                    return_as_data=True
+                    return_as_data=True,
+                    encrypted_data=result['encrypted_data']
                 )
-                
+
                 original_content = read_file(self.sample_file)
                 self.assertEqual(decrypt_result['decrypted_data'], original_content)
                 logging.debug(f'Encryption/decryption with {cipher} successful.')
