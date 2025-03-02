@@ -1,4 +1,4 @@
-# api.py
+# Copyright (c) 2025 Ernesto Sola-Thomas
 """
 API interface for the Post-Quantum File Encryption system.
 Provides high-level functions for encryption, decryption, and key management.

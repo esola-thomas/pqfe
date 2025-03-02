@@ -1,4 +1,4 @@
-# symmetric.py
+# Copyright (c) 2025 Ernesto Sola-Thomas
 """
 Symmetric cipher interface and implementations for the PQFE system.
 Provides AES-256-GCM and ChaCha20-Poly1305 ciphers.

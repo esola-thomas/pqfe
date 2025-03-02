@@ -1,4 +1,4 @@
-# config.py
+# Copyright (c) 2025 Ernesto Sola-Thomas
 """
 Configuration module for Post-Quantum File Encryption system.
 Defines constants and configuration options.

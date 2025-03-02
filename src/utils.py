@@ -1,4 +1,4 @@
-# utils.py
+# Copyright (c) 2025 Ernesto Sola-Thomas
 """
 Utility functions for Post-Quantum File Encryption system.
 Provides helper functions used across modules.

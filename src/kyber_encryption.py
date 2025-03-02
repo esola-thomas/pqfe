@@ -1,4 +1,4 @@
-# kyber_encryption.py
+# Copyright (c) 2025 Ernesto Sola-Thomas
 """
 Main class for Kyber-based encryption operations.
 Implements core encryption and decryption functionality using liboqs.

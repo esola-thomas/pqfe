@@ -1,4 +1,4 @@
-# file_ops.py
+# Copyright (c) 2025 Ernesto Sola-Thomas
 """
 File operations module for handling file encryption and decryption.
 Provides functionality for reading, writing, and processing files.

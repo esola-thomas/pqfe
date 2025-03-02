@@ -1,4 +1,4 @@
-# key_management.py
+# Copyright (c) 2025 Ernesto Sola-Thomas
 """
 Key management module for handling Kyber key operations.
 Provides functionality for key generation, storage, and loading.
