@@ -69,7 +69,8 @@ class PQFE:
         private_key: Optional[bytes] = None,
         output_dir: Optional[str] = None,
         output_filename: Optional[str] = None,
-        return_as_data: bool = False
+        return_as_data: bool = False,
+        encrypted_data: Optional[bytes] = None   # NEW parameter
     ) -> Dict[str, Any]:
         """
         Decrypt a file using Kyber.
@@ -81,6 +82,7 @@ class PQFE:
             output_dir (Optional[str]): Directory to write the decrypted file
             output_filename (Optional[str]): Custom filename for the decrypted file
             return_as_data (bool): If True, return decrypted data in-memory instead of writing to disk
+            encrypted_data (Optional[bytes]): Directly provided encrypted data (used for in-memory operations)
             
         Returns:
             Dict containing:
@@ -94,7 +96,8 @@ class PQFE:
             ciphertext, 
             output_dir, 
             output_filename, 
-            return_as_data
+            return_as_data,
+            encrypted_data=encrypted_data
         )
         
     def generate_keys(self) -> Tuple[bytes, bytes]:
