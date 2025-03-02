@@ -1,14 +1,10 @@
-# Copyright (c) 2025 Ernesto Sola-Thomas
-
+# file_ops.py
 """
 File operations module for handling file encryption and decryption.
 Provides functionality for reading, writing, and processing files.
 """
 
-from typing import BinaryIO, Tuple, Optional
 from pathlib import Path
-import os
-import json
 
 def read_file(file_path: str) -> bytes:
     """
@@ -29,29 +25,26 @@ def read_file(file_path: str) -> bytes:
         raise FileNotFoundError(f"File not found: {file_path}")
         
     try:
-        # read_bytes handles both binary and text files
         return path.read_bytes()
     except IOError as e:
         raise IOError(f"Error reading file {file_path}: {str(e)}")
 
-def write_encrypted_file(
-    file_path: str,
-    encrypted_content: bytes
-) -> str:
+def write_encrypted_file(file_path: str, encrypted_content: bytes) -> str:
     """
     Write encrypted content to file.
     
     Args:
-        file_path (str): Original file path
+        file_path (str): Full path for the encrypted file
         encrypted_content (bytes): Encrypted file content
         
     Returns:
         str: Path to the encrypted file
     """
-    encrypted_file_path = f"{file_path}.enc"
-    with open(encrypted_file_path, 'wb') as f:
+    path = Path(file_path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with open(path, 'wb') as f:
         f.write(encrypted_content)
-    return encrypted_file_path
+    return str(path)
 
 def read_encrypted_file(encrypted_file: str) -> bytes:
     """
@@ -61,29 +54,24 @@ def read_encrypted_file(encrypted_file: str) -> bytes:
         encrypted_file (str): Path to encrypted file
         
     Returns:
-        bytes: encrypted content
+        bytes: Encrypted content
     """
     with open(encrypted_file, 'rb') as f:
         return f.read()
 
-def write_decrypted_file(
-    encrypted_file: str,
-    decrypted_content: bytes,
-    output_path: Optional[str] = None
-) -> str:
+def write_decrypted_file(file_path: str, decrypted_content: bytes) -> str:
     """
     Write decrypted content to file.
     
     Args:
-        encrypted_file (str): Original encrypted file path
-        decrypted_content (bytes): Decrypted content
-        output_path (Optional[str]): Custom output path
+        file_path (str): Full path for the decrypted file
+        decrypted_content (bytes): Decrypted file content
         
     Returns:
         str: Path to the decrypted file
     """
-    if output_path is None:
-        output_path = encrypted_file.replace('.enc', '')
-    with open(output_path, 'wb') as f:
+    path = Path(file_path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with open(path, 'wb') as f:
         f.write(decrypted_content)
-    return output_path 
+    return str(path)
