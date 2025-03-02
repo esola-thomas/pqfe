@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "pqfe"
+version = "0.1.0"
+description = "Post-Quantum File Encryption API with Kyber and hybrid encryption"
+authors = ["Ernesto Sola-Thomas ernesto@solathomas.com"]
+license = "MIT"
+readme = "README.md"
+repository = "https://github.com/esola-thomas/pqfe"
+packages = [{include = "src"}]
+[tool.poetry.dependencies]
+python = "^3.10.16"
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.0"
+black = "^22.1"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

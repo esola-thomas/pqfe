@@ -12,8 +12,6 @@ setup(
     packages=find_packages(),
     install_requires=[
         "cryptography>=41.0.0",
-        "pycryptodome",
-        "oqs-python"
     ],
     classifiers=[
         "Development Status :: 4 - Beta",

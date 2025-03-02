@@ -43,7 +43,7 @@ RUN pip install . && pip install pytest cryptography
 FROM ubuntu:25.04
 ENV DEBIAN_FRONTEND=noninteractive
 # Install runtime dependencies. Note: Use libssl3 instead of libssl1.1
-RUN apt update && apt install -y libssl3 && rm -rf /var/lib/apt/lists/*
+RUN apt update && apt install -y libssl3 git && rm -rf /var/lib/apt/lists/*
 
 # Copy Python and built libraries from builder stage
 COPY --from=builder /root/.pyenv /root/.pyenv
