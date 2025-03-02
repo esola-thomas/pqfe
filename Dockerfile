@@ -1,7 +1,6 @@
 # Stage 1: Builder
 FROM ubuntu:25.04 AS builder
 ARG PYTHON_VERSION=3.10.16
-ARG LIBOQS_BUILD_DEFINES="-DOQS_DIST_BUILD=ON -DBUILD_SHARED_LIBS=ON -DOQS_USE_OPENSSL=OFF"
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -19,49 +18,49 @@ ENV PATH="$PYENV_ROOT/bin:$PYENV_ROOT/shims:$PATH"
 RUN pyenv install ${PYTHON_VERSION} && pyenv global ${PYTHON_VERSION}
 RUN python -m pip install --upgrade pip
 
-# Clone and build liboqs and liboqs-python
+# Clone and build liboqs following the recommended approach
 WORKDIR /opt
-RUN git clone --depth 1 --branch main https://github.com/open-quantum-safe/liboqs
-RUN git clone --depth 1 --branch main https://github.com/open-quantum-safe/liboqs-python.git
+RUN git clone --depth=1 https://github.com/open-quantum-safe/liboqs && \
+    cmake -S liboqs -B liboqs/build -DBUILD_SHARED_LIBS=ON && \
+    cmake --build liboqs/build --parallel 8 && \
+    cmake --build liboqs/build --target install
 
-# Build liboqs
-WORKDIR /opt/liboqs
-RUN mkdir lib && cd lib && cmake -GNinja .. ${LIBOQS_BUILD_DEFINES} && ninja install
+# Set liboqs library path for subsequent steps
+ENV LD_LIBRARY_PATH=/usr/local/lib
 
-# (Optional) Build OpenSSL with OQS support if required
+# Clone and install liboqs-python
 WORKDIR /opt
-RUN git clone --depth 1 --branch OQS-OpenSSL_1_1_1-stable https://github.com/open-quantum-safe/openssl.git && \
-    cd liboqs && mkdir build-openssl && cd build-openssl && \
-    cmake -GNinja .. ${LIBOQS_BUILD_DEFINES} -DCMAKE_INSTALL_PREFIX=/opt/openssl/oqs && ninja install && \
-    cd /opt/openssl && LDFLAGS="-Wl,-rpath -Wl,/usr/local/lib64" ./Configure shared linux-x86_64 -lm && make -j2 && make install_sw
-
-# Build and install liboqs-python
-WORKDIR /opt/liboqs-python
-RUN pip install . && pip install pytest cryptography
+RUN git clone --depth=1 https://github.com/open-quantum-safe/liboqs-python.git && \
+    cd liboqs-python && \
+    pip install . && \
+    pip install pytest cryptography nose2
 
 # Stage 2: Final Runtime Image
 FROM ubuntu:25.04
 ENV DEBIAN_FRONTEND=noninteractive
-# Install runtime dependencies. Note: Use libssl3 instead of libssl1.1
-RUN apt update && apt install -y libssl3 git && rm -rf /var/lib/apt/lists/*
+
+# Install runtime dependencies
+RUN apt update && apt install -y libssl3 git cmake && rm -rf /var/lib/apt/lists/*
 
 # Copy Python and built libraries from builder stage
 COPY --from=builder /root/.pyenv /root/.pyenv
 ENV PYENV_ROOT="/root/.pyenv"
 ENV PATH="$PYENV_ROOT/bin:$PYENV_ROOT/shims:$PATH"
-RUN eval "$(pyenv init --path)" && pyenv global ${PYTHON_VERSION}
+ENV LD_LIBRARY_PATH=/usr/local/lib
 
-# Copy installed liboqs-python (if your package requires it to be pre-installed)
+# Copy shared libraries and installed files
+COPY --from=builder /usr/local/lib /usr/local/lib
+COPY --from=builder /usr/local/include /usr/local/include
 COPY --from=builder /opt/liboqs-python /opt/liboqs-python
 
-# Install your pqfe package (assuming it's in your repository)
+# Install your pqfe package
 WORKDIR /ws
 COPY . /ws
 RUN pip install -e .
 
-# Set environment variables for OQS
-ENV OQS_INSTALL_PATH=/opt/liboqs/lib
-ENV LD_LIBRARY_PATH=/opt/liboqs/lib
+# Install liboqs-python in final stage
+WORKDIR /opt/liboqs-python
+RUN pip install .
 
 # Test installation of the oqs library
 RUN python -c "import oqs; print('oqs installed successfully')"
