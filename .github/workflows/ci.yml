@@ -9,28 +9,29 @@ on:
       - main
   workflow_dispatch:
 jobs:
-    test:
-      runs-on: ubuntu-latest
-      steps:
-        - uses: actions/checkout@v3
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
 
-        - name: Cache Docker layers
-          uses: actions/cache@v3
-          with:
-            path: /tmp/.buildx-cache
-            key: ${{ runner.os }}-buildx-${{ github.sha }}
-            restore-keys: |
-              ${{ runner.os }}-buildx-
+      - name: Cache Docker layers
+        uses: actions/cache@v3
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
 
-        - name: Pull Docker image
-          run: docker pull ernessola/pqfe:latest
+      - name: Pull Docker image
+        run: docker pull ernessola/pqfe:latest
 
-        - name: Run tests in container
-          continue-on-error: false
-          env:
-            NO_CACHE: ${{ github.event.number }}_${{ github.run_id }}_${{ github.run_attempt }}
-          run: |
-            docker run --rm \
-              -v ${{ github.workspace }}:/ws \
-              ernessola/pqfe:latest \
-              python -m pytest /ws/tests
+      - name: Run tests in container
+        env:
+          NO_CACHE: ${{ github.event.number }}_${{ github.run_id }}_${{ github.run_attempt }}
+        run: |
+          docker run --rm -v ${{ github.workspace }}:/ws ernessola/pqfe:latest python -m pytest /ws/tests
+
+      - name: Scan Docker image with Trivy
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ernessola/pqfe:latest

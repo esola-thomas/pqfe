@@ -13,6 +13,9 @@ PQFE is a tool that allows you to encrypt files using post-quantum cryptographic
 - File encryption and decryption
 - Built on top of the well-tested liboqs library
 - Python-based for cross-platform compatibility
+- Multiple symmetric cipher options (AES-256-GCM and ChaCha20-Poly1305)
+- In-memory operation support
+- Customizable output locations
 
 ## Build status
 [![Build and Push Docker Image](https://github.com/esola-thomas/pqfe/actions/workflows/push_docker_image.yml/badge.svg)](https://github.com/esola-thomas/pqfe/actions/workflows/push_docker_image.yml)
