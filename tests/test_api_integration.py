@@ -10,7 +10,7 @@ import os
 import tempfile
 import shutil
 
-from external.pqfe.src.api import PQFE
+from src.api import PQFE
 
 class TestApiIntegration(unittest.TestCase):
     """Integration tests for PQFE API functionality."""

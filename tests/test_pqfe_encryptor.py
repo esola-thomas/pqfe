@@ -12,7 +12,7 @@ from pathlib import Path
 import base64
 import shutil
 
-from external.pqfe.src.api import PQFE, PQFEEncryptor
+from src.api import PQFE
 
 class TestPQFEEncryptor(unittest.TestCase):
     """Test cases for the PQFEEncryptor class and related functionality."""
