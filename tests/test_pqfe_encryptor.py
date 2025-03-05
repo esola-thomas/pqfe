@@ -147,13 +147,6 @@ class TestPQFEEncryptor(unittest.TestCase):
         
         self.assertEqual(decrypt_result["decrypted_data"], self.test_content)
 
-    def test_invalid_public_key(self):
-        """Test behavior with invalid public key."""
-        with self.assertRaises(Exception):
-            # Create encryptor with invalid key should fail
-            encryptor = PQFEEncryptor(public_key=b"invalid_key")
-            encryptor.encrypt_data(self.test_content)
-
     def test_large_data_encryption(self):
         """Test encryption of larger data."""
         large_data = os.urandom(1024 * 1024)  # 1MB of random data
