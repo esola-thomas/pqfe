@@ -13,7 +13,7 @@ from pathlib import Path
 
 # Add parent directory to path to find modules
 sys.path.append(str(Path(__file__).parent.parent))
-from external.pqfe.src.api import PQFE, PQFEEncryptor
+from src.api import PQFE, PQFEEncryptor
 
 class TestApiIntegration(unittest.TestCase):
     """Integration tests for PQFE API functionality."""
