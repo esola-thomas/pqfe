@@ -10,7 +10,7 @@ import os
 import tempfile
 import shutil
 
-from src.api import PQFE
+from src.api import PQFE PQFEEncryptor
 
 class TestApiIntegration(unittest.TestCase):
     """Integration tests for PQFE API functionality."""
