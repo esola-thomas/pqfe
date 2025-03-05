@@ -24,7 +24,13 @@ class PQFEEncryptor:
             public_key (bytes): Public key for encryption
             variant (str): Kyber variant to use (Kyber512, Kyber768, or Kyber1024)
             cipher (str): Symmetric cipher to use ("AES256GCM" or "ChaCha20Poly1305")
+            
+        Raises:
+            ValueError: If the public_key is invalid or missing
         """
+        if not isinstance(public_key, bytes) or len(public_key) < 10:
+            raise ValueError("Invalid public key format or length")
+            
         self.public_key = public_key
         self.variant = variant
         self.cipher = get_cipher_instance(cipher)
@@ -116,11 +122,10 @@ class PQFE:
         """
         Encrypt data in-memory using Kyber key encapsulation and a symmetric cipher.
         """
-        with self.encryptor.__class__(variant=self.encryptor.variant, cipher=self.encryptor.cipher.__class__.__name__) as temp_kem:
-            # Generate encapsulation using provided public key.
-            from external.pqfe.src import kyber_encryption
-            ciphertext, shared_secret = temp_kem.encryptor.generate_keypair()  # Simulated; in practice, use the encapsulation method.
-        # Instead, use the KyberEncryption encapsulation:
+        # Get the correct cipher name instead of using the class name
+        cipher_name = self._get_cipher_name(self.encryptor.cipher)
+        
+        # Directly use oqs for encapsulation
         import oqs
         with oqs.KeyEncapsulation(self.encryptor.variant) as kem:
             ciphertext, shared_secret = kem.encap_secret(public_key)

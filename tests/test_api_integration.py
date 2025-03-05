@@ -1,16 +1,19 @@
 # Copyright (c) 2025 Ernesto Sola-Thomas
 
 """
-Test elabroated cases for distributing encrypted files.
+Test elaborated cases for distributing encrypted files.
 """
-
 
 import unittest
 import os
 import tempfile
 import shutil
+import sys
+from pathlib import Path
 
-from src.api import PQFE, PQFEEncryptor
+# Add parent directory to path to find modules
+sys.path.append(str(Path(__file__).parent.parent))
+from external.pqfe.src.api import PQFE, PQFEEncryptor
 
 class TestApiIntegration(unittest.TestCase):
     """Integration tests for PQFE API functionality."""

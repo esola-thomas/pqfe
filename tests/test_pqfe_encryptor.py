@@ -4,15 +4,17 @@
 Test subclass for PQFEEncryptor encryption functionality.
 """
 
-
 import unittest
 import os
 import tempfile
 from pathlib import Path
 import base64
 import shutil
+import sys
 
-from src.api import PQFE, PQFEEncryptor
+# Add parent directory to path to find modules
+sys.path.append(str(Path(__file__).parent.parent))
+from external.pqfe.src.api import PQFE, PQFEEncryptor
 
 class TestPQFEEncryptor(unittest.TestCase):
     """Test cases for the PQFEEncryptor class and related functionality."""
