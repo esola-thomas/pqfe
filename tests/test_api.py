@@ -25,7 +25,8 @@ class TestPQFE(unittest.TestCase):
         self.key_dir = Path(self.test_dir) / "keys"
         self.key_dir.mkdir(exist_ok=True)
         self.pqfe = PQFE(
-            variant="Kyber512", 
+            kyber_variant="Kyber512",
+            dilithium_variant="Dilithium3",
             key_directory=str(self.key_dir),
             cipher="AES256GCM"
         )
@@ -143,7 +144,8 @@ class TestPQFE(unittest.TestCase):
         for cipher in ["AES256GCM", "ChaCha20Poly1305"]:
             with self.subTest(cipher=cipher):
                 pqfe = PQFE(
-                    variant="Kyber512", 
+                    kyber_variant="Kyber512",
+                    dilithium_variant="Dilithium3",
                     key_directory=str(self.key_dir),
                     cipher=cipher
                 )
@@ -168,6 +170,69 @@ class TestPQFE(unittest.TestCase):
                 self.assertEqual(decrypt_result['decrypted_data'].decode('utf-8'), self.test_content)
                 if LOGGING_ENABLED:
                     logging.debug(f"Encryption/decryption with {cipher} successful")
+
+    def test_pqfe_signer(self):
+        """Test PQFESigner functionality."""
+        public_key, private_key = self.pqfe.generate_signature_keys()
+        signer = self.pqfe.create_signer(private_key)
+        
+        data = b"Test data for signing"
+        signature = signer.sign_data(data)
+        
+        verifier = self.pqfe.create_verifier(public_key)
+        self.assertTrue(verifier.verify_data(data, signature))
+
+    def test_pqfe_verifier(self):
+        """Test PQFEVerifier functionality."""
+        public_key, private_key = self.pqfe.generate_signature_keys()
+        verifier = self.pqfe.create_verifier(public_key)
+        
+        data = b"Test data for verification"
+        signer = self.pqfe.create_signer(private_key)
+        signature = signer.sign_data(data)
+        
+        self.assertTrue(verifier.verify_data(data, signature))
+
+    def test_encrypt_and_sign(self):
+        """Test encrypt_and_sign functionality."""
+        encryption_public_key, encryption_private_key = self.pqfe.generate_keys()
+        signature_public_key, signature_private_key = self.pqfe.generate_signature_keys()
+        
+        result = self.pqfe.encrypt_and_sign(
+            file_path=str(self.test_file),
+            encryption_public_key=encryption_public_key,
+            signature_private_key=signature_private_key,
+            return_as_data=True
+        )
+        
+        self.assertIn('encrypted_data', result)
+        self.assertIn('ciphertext', result)
+        self.assertIn('signature', result)
+
+    def test_decrypt_and_verify(self):
+        """Test decrypt_and_verify functionality."""
+        encryption_public_key, encryption_private_key = self.pqfe.generate_keys()
+        signature_public_key, signature_private_key = self.pqfe.generate_signature_keys()
+        
+        encrypt_result = self.pqfe.encrypt_and_sign(
+            file_path=str(self.test_file),
+            encryption_public_key=encryption_public_key,
+            signature_private_key=signature_private_key,
+            return_as_data=True
+        )
+        
+        decrypt_result = self.pqfe.decrypt_and_verify(
+            encrypted_file=str(self.test_file),
+            ciphertext=encrypt_result['ciphertext'],
+            signature=encrypt_result['signature'],
+            encryption_private_key=encryption_private_key,
+            verification_public_key=signature_public_key,
+            return_as_data=True,
+            encrypted_data=encrypt_result['encrypted_data']
+        )
+        
+        self.assertIn('decrypted_data', decrypt_result)
+        self.assertTrue(decrypt_result['verified'])
 
 if __name__ == '__main__':
     unittest.main()
