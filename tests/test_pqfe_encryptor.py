@@ -111,7 +111,7 @@ class TestPQFEEncryptor(unittest.TestCase):
         for variant in variants:
             with self.subTest(variant=variant):
                 # Create a PQFE instance with the variant
-                pqfe = PQFE(kyber_variant=variant, key_directory=self.test_dir)
+                pqfe = PQFE(variant=variant, key_directory=self.test_dir)
                 public_key, private_key = pqfe.generate_keys()
                 
                 # Create an encryptor and test it
