@@ -25,7 +25,8 @@ class TestPQFE(unittest.TestCase):
         self.key_dir = Path(self.test_dir) / "keys"
         self.key_dir.mkdir(exist_ok=True)
         self.pqfe = PQFE(
-            variant="Kyber512", 
+            kyber_variant="Kyber512",
+            dilithium_variant="Dilithium3",
             key_directory=str(self.key_dir),
             cipher="AES256GCM"
         )
@@ -143,7 +144,8 @@ class TestPQFE(unittest.TestCase):
         for cipher in ["AES256GCM", "ChaCha20Poly1305"]:
             with self.subTest(cipher=cipher):
                 pqfe = PQFE(
-                    variant="Kyber512", 
+                    kyber_variant="Kyber512",
+                    dilithium_variant="Dilithium3",
                     key_directory=str(self.key_dir),
                     cipher=cipher
                 )
