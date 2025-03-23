@@ -7,7 +7,7 @@ from typing import Tuple, Optional
 import os
 from pathlib import Path
 
-def save_keys(public_key: bytes, private_key: bytes, key_directory: str, key_type: str = "encryption") -> None:
+def save_keys(public_key: bytes, private_key: bytes, key_directory: str, key_type: str = "encryption") -> Tuple[Path, Path]:
     """
     Save public and private keys to the specified directory.
     
@@ -18,7 +18,7 @@ def save_keys(public_key: bytes, private_key: bytes, key_directory: str, key_typ
         key_type (str): Type of key to save (encryption or signature)
         
     Returns:
-        None
+        Tuple[Path, Path]: Paths to the saved public and private key files
     """
     directory = Path(key_directory)
     directory.mkdir(parents=True, exist_ok=True)
@@ -44,6 +44,8 @@ def save_keys(public_key: bytes, private_key: bytes, key_directory: str, key_typ
     except Exception:
         # On some systems or file systems, chmod might not work
         pass
+
+    return pub_key_path, priv_key_path
 
 def load_keys(key_directory: str, key_type: str = "encryption") -> Tuple[Optional[bytes], Optional[bytes]]:
     """
