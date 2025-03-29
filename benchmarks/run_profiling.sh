@@ -1,3 +1,4 @@
+# Copyright (c) 2025 Ernesto Sola-Thomas
 #!/bin/bash
 
 # filepath: /home/esola-thomas/Electrical_and_Computer_Master_Thesis/run_profiling.sh

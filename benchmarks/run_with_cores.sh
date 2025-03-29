@@ -1,3 +1,4 @@
+# Copyright (c) 2025 Ernesto Sola-Thomas
 #!/bin/bash
 
 # Wrapper script to control the number of CPU cores assigned to the Python script

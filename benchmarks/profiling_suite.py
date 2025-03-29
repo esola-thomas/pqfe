@@ -1,3 +1,4 @@
+# Copyright (c) 2025 Ernesto Sola-Thomas
 import os
 import time
 import psutil
