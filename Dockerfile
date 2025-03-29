@@ -58,13 +58,26 @@ COPY --from=builder /opt/liboqs-python /opt/liboqs-python
 WORKDIR /ws
 COPY . /ws
 RUN pip install -e .
+RUN pip install -r requirements.txt
 
 # Install liboqs-python in final stage
 WORKDIR /opt/liboqs-python
 RUN pip install .
+# # Install psutil Python module
+# RUN pip install psutil
+
+# # Install matplotlib Python module
+# RUN pip install matplotlib
+
+# # Install seaborn Python module
+# RUN pip install seaborn
 
 # Test installation of the oqs library
 RUN python -c "import oqs; print('oqs installed successfully')"
 
-# Default command
-CMD ["tail", "-f", "/dev/null"]
+# Add a script to limit CPU cores and run the profiling script
+RUN chmod +x /ws/benchmarks/run_with_cores.sh
+
+WORKDIR /ws
+# Default command to run the profiling script with 1 cores
+CMD ["/ws/benchmarks/run_with_cores.sh", "1", "/ws/benchmarks/profiling_suite.py"]

@@ -21,5 +21,5 @@ setup(
         "Programming Language :: Python :: 3.10.16",
         "Topic :: Security :: Cryptography"
     ],
-    python_requires=">=3.8",
+    python_requires=">=3.10.16",
 )
