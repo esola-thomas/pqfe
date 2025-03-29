@@ -20,7 +20,7 @@ docker build -t "$DOCKER_IMAGE" /home/esola-thomas/Electrical_and_Computer_Maste
 echo "Running Docker container..."
 # docker run -d --name "$DOCKER_CONTAINER_NAME" --cpus=1 --memory=8g \
 #   -v "$RESULTS_DIR:/ws/profiling_results" "$DOCKER_IMAGE" > "$LOG_FILE" 2>&1
-docker run --cpus=1 --memory=16g -v /home/esola-thomas/Electrical_and_Computer_Master_Thesis/profiling_results:/ws/profiling_results pqfe_profiling > /home/esola-thomas/Electrical_and_Computer_Master_Thesis/profiling_results/container_logs.txt 2>&1
+docker run --cpus=1 --memory=8g -v /home/esola-thomas/Electrical_and_Computer_Master_Thesis/profiling_results:/ws/profiling_results pqfe_profiling > /home/esola-thomas/Electrical_and_Computer_Master_Thesis/profiling_results/container_logs.txt 2>&1
 # Get the container ID
 CONTAINER_ID=$(docker ps -q -f name="$DOCKER_CONTAINER_NAME")
 
