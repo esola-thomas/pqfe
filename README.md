@@ -36,17 +36,17 @@ To run the benchmarks, you can use the provided Docker container for a controlle
 
 1. **Build the Docker Image:**
    ```bash
-   docker build -t pqfe_profiling /home/esola-thomas/Electrical_and_Computer_Master_Thesis/external/pqfe
+   docker build -t pqfe_profiling .
    ```
 
 2. **Run the Docker Container:**
    Limit the container to 1 CPU and 2GB of RAM for controlled profiling:
    ```bash
-   docker run --cpus=1 --memory=2g -v /home/esola-thomas/Electrical_and_Computer_Master_Thesis/profiling_results:/ws/profiling_results pqfe_profiling
+   docker run --cpus=1 --memory=2g -v ./profiling_results:/ws/profiling_results pqfe_profiling
    ```
 
 3. **View Results:**
-   The profiling results, including graphs and raw data, will be saved in the `/home/esola-thomas/Electrical_and_Computer_Master_Thesis/profiling_results` directory.
+   The profiling results, including graphs and raw data, will be saved in the `./profiling_results` directory.
 
 ### Example Graphs
 
