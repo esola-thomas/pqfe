@@ -63,14 +63,6 @@ RUN pip install -r requirements.txt
 # Install liboqs-python in final stage
 WORKDIR /opt/liboqs-python
 RUN pip install .
-# # Install psutil Python module
-# RUN pip install psutil
-
-# # Install matplotlib Python module
-# RUN pip install matplotlib
-
-# # Install seaborn Python module
-# RUN pip install seaborn
 
 # Test installation of the oqs library
 RUN python -c "import oqs; print('oqs installed successfully')"
