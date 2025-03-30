@@ -18,8 +18,8 @@ setup(
         "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
         "License :: OSI Approved :: MIT License",
-        "Programming Language :: Python :: 3.10.16",
+        "Programming Language :: Python :: 3.10",
         "Topic :: Security :: Cryptography"
     ],
-    python_requires=">=3.10.16",
+    python_requires=">=3.10",
 )
