@@ -1,12 +1,10 @@
 # Copyright (c) 2025 Ernesto Sola-Thomas
 #!/bin/bash
 
-# filepath: /home/esola-thomas/Electrical_and_Computer_Master_Thesis/run_profiling.sh
-
 # Set variables
 DOCKER_IMAGE="pqfe_profiling"
 DOCKER_CONTAINER_NAME="pqfe_profiling_container"
-RESULTS_DIR="/home/esola-thomas/Electrical_and_Computer_Master_Thesis/profiling_results"
+RESULTS_DIR="./profiling_results"
 LOG_FILE="$RESULTS_DIR/container_logs.txt"
 STATS_FILE="$RESULTS_DIR/container_stats.txt"
 
@@ -15,13 +13,12 @@ mkdir -p "$RESULTS_DIR"
 
 # Build the Docker image
 echo "Building Docker image..."
-docker build -t "$DOCKER_IMAGE" /home/esola-thomas/Electrical_and_Computer_Master_Thesis/external/pqfe || exit 1
+docker build -t "$DOCKER_IMAGE" . || exit 1
 
 # Run the Docker container in detached mode
 echo "Running Docker container..."
-# docker run -d --name "$DOCKER_CONTAINER_NAME" --cpus=1 --memory=8g \
-#   -v "$RESULTS_DIR:/ws/profiling_results" "$DOCKER_IMAGE" > "$LOG_FILE" 2>&1
-docker run --cpus=1 --memory=8g -v /home/esola-thomas/Electrical_and_Computer_Master_Thesis/profiling_results:/ws/profiling_results pqfe_profiling > /home/esola-thomas/Electrical_and_Computer_Master_Thesis/profiling_results/container_logs.txt 2>&1
+docker run --cpus=1 --memory=20g -v "$RESULTS_DIR:/ws/profiling_results" "$DOCKER_IMAGE" > "$LOG_FILE" 2>&1
+
 # Get the container ID
 CONTAINER_ID=$(docker ps -q -f name="$DOCKER_CONTAINER_NAME")
 

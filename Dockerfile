@@ -67,9 +67,6 @@ RUN pip install .
 # Test installation of the oqs library
 RUN python -c "import oqs; print('oqs installed successfully')"
 
-# Add a script to limit CPU cores and run the profiling script
-RUN chmod +x /ws/benchmarks/run_with_cores.sh
-
 WORKDIR /ws
 # Default command to run the profiling script with 1 cores
-CMD ["/ws/benchmarks/run_with_cores.sh", "1", "/ws/benchmarks/profiling_suite.py"]
+CMD ["sh", "-c", "echo 'Initializing container...'; sleep 15; echo 'Available CPU cores:' $(nproc); echo 'Available RAM:' $(free -h | grep Mem | awk '{print $7}'); python /ws/benchmarks/profiling_suite.py"]

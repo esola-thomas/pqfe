@@ -4,18 +4,16 @@ import time
 import psutil
 import matplotlib.pyplot as plt
 import seaborn as sns
-import multiprocessing
 from pathlib import Path
 from src.api import PQFE
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 import json
 
 class ProfilingSuite:
-    def __init__(self, output_dir="profiling_results", num_cores=None):
+    def __init__(self, output_dir="profiling_results"):
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(exist_ok=True, parents=True)
-        self.num_cores = num_cores or multiprocessing.cpu_count()
-        print(f"Using {self.num_cores} CPU cores for testing.")
+        print("Using all available CPU cores for testing.")
 
     def generate_test_file(self, size_in_bytes, file_path):
         print(f"Generating test file of size {size_in_bytes} bytes...")
@@ -29,29 +27,22 @@ class ProfilingSuite:
             print(f"Test file {file_path} removed.")
 
     def measure_performance(self, func, *args, **kwargs):
-        # Set process affinity to enforce the specified number of cores
         process = psutil.Process(os.getpid())
-        process.cpu_affinity(list(range(self.num_cores)))
-        
-        # Capture baseline CPU times and memory before running function
         start_time = time.time()
         start_memory = process.memory_info().rss
         start_cpu_times = process.cpu_times()
-        
+
         result = func(*args, **kwargs)
-        
-        # Capture post-run metrics
+
         end_time = time.time()
         end_memory = process.memory_info().rss
         end_cpu_times = process.cpu_times()
-        
-        # Calculate CPU time used (user+system)
+
         cpu_time_used = ((end_cpu_times.user + end_cpu_times.system) -
                          (start_cpu_times.user + start_cpu_times.system))
         elapsed_time = end_time - start_time
-        # Normalize CPU usage to the number of allocated cores
-        cpu_percent = (cpu_time_used / elapsed_time * 100 / self.num_cores) if elapsed_time > 0 else 0
-        
+        cpu_percent = (cpu_time_used / elapsed_time * 100) if elapsed_time > 0 else 0
+
         return {
             "time": elapsed_time,
             "memory": end_memory - start_memory,
@@ -70,7 +61,6 @@ class ProfilingSuite:
             encrypted_data=encrypt_result["encrypted_data"]
         )
         print(f"PQFE encryption and decryption for {file_path} completed.")
-        # Return as a tuple (encrypt_result, decrypt_result)
         return (encrypt_result, decrypt_result)
 
     def aes_encrypt_decrypt(self, file_path, key):
@@ -82,7 +72,6 @@ class ProfilingSuite:
         encrypted_data = aesgcm.encrypt(nonce, data, None)
         decrypted_data = aesgcm.decrypt(nonce, encrypted_data, None)
         print(f"AES encryption and decryption for {file_path} completed.")
-        # Return a tuple for consistency; first element is the encrypted data
         return (encrypted_data, decrypted_data)
 
     def plot_results(self, results):
@@ -109,7 +98,6 @@ class ProfilingSuite:
         pqfe_cpu = [r["pqfe"]["cpu"] for r in results]
         aes_cpu = [r["aes"]["cpu"] for r in results]
 
-        # Plot Memory Usage
         plt.figure(figsize=(10, 6))
         plt.plot(sizes, pqfe_memory, label="PQFE Memory Usage", marker="o")
         plt.plot(sizes, aes_memory, label="AES Memory Usage", marker="o")
@@ -120,7 +108,6 @@ class ProfilingSuite:
         plt.savefig(self.output_dir / "memory_vs_size.png")
         plt.close()
 
-        # Plot CPU Usage
         plt.figure(figsize=(10, 6))
         plt.plot(sizes, pqfe_cpu, label="PQFE CPU Usage", marker="o")
         plt.plot(sizes, aes_cpu, label="AES CPU Usage", marker="o")
@@ -131,8 +118,6 @@ class ProfilingSuite:
         plt.savefig(self.output_dir / "cpu_vs_size.png")
         plt.close()
 
-        # Calculate storage used for encrypted data
-        # For PQFE, extract from the encryption result (which is at index 0 of the tuple)
         pqfe_storage = []
         for r in results:
             pqfe_result = r["pqfe"]["result"][0]
@@ -144,7 +129,6 @@ class ProfilingSuite:
                 pqfe_storage.append(0)
         aes_storage = [len(r["aes"]["result"][0]) for r in results]
 
-        # Plot Storage Size
         plt.figure(figsize=(10, 6))
         plt.plot(sizes, pqfe_storage, label="PQFE Encrypted Size", marker="o")
         plt.plot(sizes, aes_storage, label="AES Encrypted Size", marker="o")
@@ -155,7 +139,6 @@ class ProfilingSuite:
         plt.savefig(self.output_dir / "storage_vs_size.png")
         plt.close()
 
-        # Save data used to create graphs
         graph_data = {
             "sizes": sizes,
             "pqfe_memory": pqfe_memory,
@@ -175,9 +158,6 @@ class ProfilingSuite:
         aes_key = os.urandom(32)
         print("Keys initialized.")
 
-        print("Waiting 40s for CPU to stabilize...")
-        time.sleep(40)
-
         results = []
 
         for size in file_sizes:
@@ -185,25 +165,40 @@ class ProfilingSuite:
             file_path = self.output_dir / f"test_file_{size}.bin"
             self.generate_test_file(size, file_path)
 
-            # Ensure CPU core constraint is enforced
-            process = psutil.Process(os.getpid())
-            process.cpu_affinity(list(range(self.num_cores)))
+            pqfe_metrics_list = []
+            aes_metrics_list = []
 
-            pqfe_metrics = self.measure_performance(
-                self.pqfe_encrypt_decrypt, file_path, pqfe, public_key, private_key
-            )
-            aes_metrics = self.measure_performance(
-                self.aes_encrypt_decrypt, file_path, aes_key
-            )
+            for _ in range(10):  # Run each test 10 times
+                pqfe_metrics = self.measure_performance(
+                    self.pqfe_encrypt_decrypt, file_path, pqfe, public_key, private_key
+                )
+                aes_metrics = self.measure_performance(
+                    self.aes_encrypt_decrypt, file_path, aes_key
+                )
+
+                pqfe_metrics_list.append(pqfe_metrics)
+                aes_metrics_list.append(aes_metrics)
+
+            # Calculate average metrics
+            avg_pqfe_metrics = {
+                "time": sum(m["time"] for m in pqfe_metrics_list) / 10,
+                "memory": sum(m["memory"] for m in pqfe_metrics_list) / 10,
+                "cpu": sum(m["cpu"] for m in pqfe_metrics_list) / 10,
+            }
+
+            avg_aes_metrics = {
+                "time": sum(m["time"] for m in aes_metrics_list) / 10,
+                "memory": sum(m["memory"] for m in aes_metrics_list) / 10,
+                "cpu": sum(m["cpu"] for m in aes_metrics_list) / 10,
+            }
 
             results.append({
                 "size": size,
-                "pqfe": pqfe_metrics,
-                "aes": aes_metrics
+                "pqfe": avg_pqfe_metrics,
+                "aes": avg_aes_metrics
             })
             print(f"Tests for file size {size} bytes completed.")
 
-            # Cleanup test file
             self.cleanup_test_file(file_path)
 
         print("All tests completed. Generating plots...")
@@ -212,15 +207,9 @@ class ProfilingSuite:
         print("Plots generated and saved.")
 
 if __name__ == "__main__":
-    import argparse
+    suite = ProfilingSuite()
 
-    parser = argparse.ArgumentParser(description="Run profiling tests for PQFE and AES encryption/decryption.")
-    parser.add_argument("--cores", type=int, default=None, help="Number of CPU cores to use for testing.")
-    args = parser.parse_args()
-
-    suite = ProfilingSuite(num_cores=args.cores)
-    
-    # More data points: From 1KB to ~100MB with intermediate sizes
+    # More evenly spaced file sizes (logarithmic scale)
     file_sizes = [
         1024,           # 1 KB
         2048,           # 2 KB
@@ -244,5 +233,5 @@ if __name__ == "__main__":
         536870912,      # 512 MB
         1073741824      # 1 GB
     ]
-    
+
     suite.run_tests(file_sizes)

@@ -40,10 +40,12 @@ To run the benchmarks, you can use the provided Docker container for a controlle
    ```
 
 2. **Run the Docker Container:**
-   Limit the container to 1 CPU and 2GB of RAM for controlled profiling:
+   Limit the container to a specific number of CPUs and memory for controlled profiling:
    ```bash
    docker run --cpus=1 --memory=2g -v ./profiling_results:/ws/profiling_results pqfe_profiling
    ```
+
+   Adjust the `--cpus` and `--memory` flags as needed to control resource usage.
 
 3. **View Results:**
    The profiling results, including graphs and raw data, will be saved in the `./profiling_results` directory.
