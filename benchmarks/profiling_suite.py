@@ -52,16 +52,24 @@ class ProfilingSuite:
 
     def pqfe_encrypt_decrypt(self, file_path, pqfe_instance, public_key, private_key):
         print(f"Running PQFE encryption and decryption for {file_path}...")
-        encrypt_result = pqfe_instance.encrypt_file(file_path, public_key=public_key, return_as_data=True)
-        decrypt_result = pqfe_instance.decrypt_file(
-            encrypted_file=file_path,
-            ciphertext=encrypt_result["ciphertext"],
-            private_key=private_key,
-            return_as_data=True,
-            encrypted_data=encrypt_result["encrypted_data"]
+        encrypt_result = pqfe_instance.encrypt_file(
+            file_path=file_path,
+            public_key=public_key,
+            return_as_data=False
         )
+        encrypted_file_path = encrypt_result["encrypted_file_path"]
+        ciphertext = encrypt_result["ciphertext"]
+
+        decrypt_result = pqfe_instance.decrypt_file(
+            encrypted_file=encrypted_file_path,
+            ciphertext=ciphertext,
+            private_key=private_key,
+            return_as_data=False
+        )
+        decrypted_file_path = decrypt_result["decrypted_file_path"]
+
         print(f"PQFE encryption and decryption for {file_path} completed.")
-        return (encrypt_result, decrypt_result)
+        return (encrypted_file_path, decrypted_file_path)
 
     def aes_encrypt_decrypt(self, file_path, key):
         print(f"Running AES encryption and decryption for {file_path}...")
