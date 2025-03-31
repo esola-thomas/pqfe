@@ -8,11 +8,19 @@ from pathlib import Path
 from src.api import PQFE
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 import json
+import glob
 
 class ProfilingSuite:
     def __init__(self, output_dir="profiling_results"):
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(exist_ok=True, parents=True)
+        
+        # Create subdirectories for different file types
+        self.json_dir = self.output_dir / "json"
+        self.charts_dir = self.output_dir / "charts"
+        self.json_dir.mkdir(exist_ok=True, parents=True)
+        self.charts_dir.mkdir(exist_ok=True, parents=True)
+        
         print("Using all available CPU cores for testing.")
 
     def generate_test_file(self, size_in_bytes, file_path):
@@ -25,29 +33,52 @@ class ProfilingSuite:
         if os.path.exists(file_path):
             os.remove(file_path)
             enc_file_path = f"{file_path}.enc"
-            os.remove(enc_file_path)
-            print(f"Test file {file_path} and {enc_file_path} removed.")
+            if os.path.exists(enc_file_path):
+                os.remove(enc_file_path)
+            print(f"Test file {file_path} and related files removed.")
+    
+    def cleanup_all_bin_files(self):
+        # Remove all temporary bin files
+        bin_files = glob.glob(str(self.output_dir / "*.bin"))
+        enc_files = glob.glob(str(self.output_dir / "*.bin.enc"))
+        for file in bin_files + enc_files:
+            if os.path.exists(file):
+                os.remove(file)
+                print(f"Removed temporary file: {file}")
 
     def measure_performance(self, func, *args, **kwargs):
         process = psutil.Process(os.getpid())
+        
+        # Start CPU percentage measurement
+        process.cpu_percent(interval=None)  # First call to initialize measurement
+        
+        # Capture start time and memory
         start_time = time.time()
         start_memory = process.memory_info().rss
-        start_cpu_times = process.cpu_times()
-
+        
+        # Execute the function
         result = func(*args, **kwargs)
-
+        
+        # Capture end time and memory
         end_time = time.time()
         end_memory = process.memory_info().rss
-        end_cpu_times = process.cpu_times()
-
-        cpu_time_used = ((end_cpu_times.user + end_cpu_times.system) -
-                         (start_cpu_times.user + start_cpu_times.system))
+        
+        # Get CPU percentage - this captures CPU usage since the last call
+        cpu_percent = process.cpu_percent(interval=None)
+        
+        # Calculate elapsed time and memory used
         elapsed_time = end_time - start_time
-        cpu_percent = (cpu_time_used / elapsed_time * 100) if elapsed_time > 0 else 0
+        memory_used = max(0, end_memory - start_memory)  # Avoid negative values
+        
+        # Add debug logs to verify values
+        print(f"Start memory: {start_memory} bytes")
+        print(f"End memory: {end_memory} bytes")
+        print(f"CPU usage: {cpu_percent}%")
+        print(f"Elapsed time: {elapsed_time} seconds")
 
         return {
             "time": elapsed_time,
-            "memory": end_memory - start_memory,
+            "memory": memory_used,
             "cpu": cpu_percent,
             "result": result
         }
@@ -73,6 +104,18 @@ class ProfilingSuite:
         print(f"PQFE encryption and decryption for {file_path} completed.")
         return (encrypted_file_path, decrypted_file_path)
 
+    def pqfe_encrypt_decrypt_in_memory(self, data: bytes, pqfe_instance, public_key, private_key):
+        print("Running PQFE in-memory encryption and decryption...")
+        encrypt_result = pqfe_instance.encrypt_data(data, public_key)
+        encrypted_data = encrypt_result["encrypted_data"]
+        ciphertext = encrypt_result["ciphertext"]
+
+        decrypt_result = pqfe_instance.decrypt_data(encrypted_data, ciphertext, private_key)
+        decrypted_data = decrypt_result["decrypted_data"]
+
+        print("PQFE in-memory encryption and decryption completed.")
+        return decrypted_data
+
     def aes_encrypt_decrypt(self, file_path, key):
         print(f"Running AES encryption and decryption for {file_path}...")
         aesgcm = AESGCM(key)
@@ -89,15 +132,17 @@ class ProfilingSuite:
         sizes = [r["size"] for r in results]
         pqfe_times = [r["pqfe"]["average"]["time"] for r in results]
         aes_times = [r["aes"]["average"]["time"] for r in results]
+        pqfe_in_memory_times = [r["pqfe_in_memory"]["average"]["time"] for r in results]
 
         plt.figure(figsize=(10, 6))
-        plt.plot(sizes, pqfe_times, label="PQFE", marker="o")
+        plt.plot(sizes, pqfe_times, label="PQFE (File-Based)", marker="o")
+        plt.plot(sizes, pqfe_in_memory_times, label="PQFE (In-Memory)", marker="o")
         plt.plot(sizes, aes_times, label="AES", marker="o")
         plt.xlabel("File Size (bytes)")
         plt.ylabel("Time (seconds)")
         plt.title("Encryption/Decryption Time vs File Size")
         plt.legend()
-        plt.savefig(self.output_dir / "time_vs_size.png")
+        plt.savefig(self.charts_dir / "time_vs_size.png")
         plt.close()
 
     def plot_additional_metrics(self, results):
@@ -105,31 +150,43 @@ class ProfilingSuite:
         sizes = [r["size"] for r in results]
         pqfe_memory = [r["pqfe"]["average"]["memory"] for r in results]
         aes_memory = [r["aes"]["average"]["memory"] for r in results]
+        pqfe_in_memory_memory = [r["pqfe_in_memory"]["average"]["memory"] for r in results]
+        
         pqfe_cpu = [r["pqfe"]["average"]["cpu"] for r in results]
         aes_cpu = [r["aes"]["average"]["cpu"] for r in results]
+        pqfe_in_memory_cpu = [r["pqfe_in_memory"]["average"]["cpu"] for r in results]
 
+        # Memory usage plot
         plt.figure(figsize=(10, 6))
-        plt.plot(sizes, pqfe_memory, label="PQFE Memory Usage", marker="o")
-        plt.plot(sizes, aes_memory, label="AES Memory Usage", marker="o")
+        plt.plot(sizes, pqfe_memory, label="PQFE (File-Based) Memory", marker="o")
+        plt.plot(sizes, pqfe_in_memory_memory, label="PQFE (In-Memory) Memory", marker="o")
+        plt.plot(sizes, aes_memory, label="AES Memory", marker="o")
         plt.xlabel("File Size (bytes)")
         plt.ylabel("Memory Usage (bytes)")
         plt.title("Memory Usage vs File Size")
         plt.legend()
-        plt.savefig(self.output_dir / "memory_vs_size.png")
+        plt.savefig(self.charts_dir / "memory_vs_size.png")
         plt.close()
 
+        # CPU usage plot
         plt.figure(figsize=(10, 6))
-        plt.plot(sizes, pqfe_cpu, label="PQFE CPU Usage", marker="o")
-        plt.plot(sizes, aes_cpu, label="AES CPU Usage", marker="o")
+        plt.plot(sizes, pqfe_cpu, label="PQFE (File-Based) CPU", marker="o")
+        plt.plot(sizes, pqfe_in_memory_cpu, label="PQFE (In-Memory) CPU", marker="o")
+        plt.plot(sizes, aes_cpu, label="AES CPU", marker="o")
         plt.xlabel("File Size (bytes)")
         plt.ylabel("CPU Usage (%)")
         plt.title("CPU Usage vs File Size")
         plt.legend()
-        plt.savefig(self.output_dir / "cpu_vs_size.png")
+        plt.savefig(self.charts_dir / "cpu_vs_size.png")
         plt.close()
 
+        # Storage plot - attempt to get metrics for all three types
         pqfe_storage = []
+        pqfe_in_memory_storage = []
+        aes_storage = []
+        
         for r in results:
+            # File-based PQFE
             pqfe_result = r["pqfe"]["average"]
             if "encrypted_data" in pqfe_result:
                 pqfe_storage.append(len(pqfe_result["encrypted_data"]))
@@ -137,20 +194,38 @@ class ProfilingSuite:
                 pqfe_storage.append(os.path.getsize(pqfe_result["encrypted_file_path"]))
             else:
                 pqfe_storage.append(0)
-        aes_storage = [
-            len(r["aes"]["average"].get("result", [b""])[0]) if "result" in r["aes"]["average"] else 0
-            for r in results
-        ]
+            
+            # In-memory PQFE
+            pqfe_in_mem_result = r["pqfe_in_memory"]["average"]
+            pqfe_in_memory_storage.append(0)  # Default value
+            # Try to extract size from individual runs if available
+            for run in r["pqfe_in_memory"]["individual_runs"]:
+                if "result" in run and isinstance(run["result"], (list, tuple)) and len(run["result"]) > 0:
+                    if hasattr(run["result"][0], "__len__"):
+                        pqfe_in_memory_storage[-1] = len(run["result"][0])
+                        break
+            
+            # AES
+            aes_result = r["aes"]["average"]
+            if "result" in aes_result and isinstance(aes_result["result"], (list, tuple)) and len(aes_result["result"]) > 0:
+                if hasattr(aes_result["result"][0], "__len__"):
+                    aes_storage.append(len(aes_result["result"][0]))
+                else:
+                    aes_storage.append(0)
+            else:
+                aes_storage.append(0)
 
         plt.figure(figsize=(10, 6))
-        plt.plot(sizes, pqfe_storage, label="PQFE Encrypted Size", marker="o")
-        plt.plot(sizes, aes_storage, label="AES Encrypted Size", marker="o")
+        plt.plot(sizes, pqfe_storage, label="PQFE (File-Based) Size", marker="o")
+        plt.plot(sizes, pqfe_in_memory_storage, label="PQFE (In-Memory) Size", marker="o")
+        plt.plot(sizes, aes_storage, label="AES Size", marker="o")
         plt.xlabel("File Size (bytes)")
-        plt.ylabel("Encrypted File Size (bytes)")
-        plt.title("Encrypted File Size vs Original File Size")
+        plt.ylabel("Encrypted Size (bytes)")
+        plt.title("Encrypted Size vs Original File Size")
         plt.legend()
-        plt.savefig(self.output_dir / "storage_vs_size.png")
+        plt.savefig(self.charts_dir / "storage_vs_size.png")
         plt.close()
+
 
     def run_tests(self, file_sizes):
         print("Initializing PQFE and AES keys...")
@@ -169,13 +244,14 @@ class ProfilingSuite:
             try:
                 pqfe_metrics_list = []
                 aes_metrics_list = []
+                pqfe_in_memory_metrics_list = []
 
                 for _ in range(10):  # Run each test 10 times
                     for attempt in range(5):
                         pqfe_metrics = self.measure_performance(
                             self.pqfe_encrypt_decrypt, file_path, pqfe, public_key, private_key
                         )
-                        if pqfe_metrics["cpu"] <= 100 or attempt == 4:
+                        if pqfe_metrics["cpu"] <= 110 or attempt == 4:
                             break
                         print(f"Retrying PQFE test for file size {size} due to high CPU utilization ({pqfe_metrics['cpu']}%).")
 
@@ -187,24 +263,37 @@ class ProfilingSuite:
                             break
                         print(f"Retrying AES test for file size {size} due to high CPU utilization ({aes_metrics['cpu']}%).")
 
-                    # Ensure 'result' field is removed before saving to JSON
-                    if "result" in pqfe_metrics:
-                        del pqfe_metrics["result"]
-                    if "result" in aes_metrics:
-                        del aes_metrics["result"]
+                    with open(file_path, "rb") as f:
+                        data = f.read()
 
-                    # Save individual run results to disk
-                    pqfe_run_file = self.output_dir / f"pqfe_run_{size}_{_}.json"
-                    aes_run_file = self.output_dir / f"aes_run_{size}_{_}.json"
+                    for attempt in range(5):
+                        pqfe_in_memory_metrics = self.measure_performance(
+                            self.pqfe_encrypt_decrypt_in_memory, data, pqfe, public_key, private_key
+                        )
+                        if pqfe_in_memory_metrics["cpu"] <= 100 or attempt == 4:
+                            break
+                        print(f"Retrying PQFE in-memory test for file size {size} due to high CPU utilization ({pqfe_in_memory_metrics['cpu']}%).")
 
-                    with open(pqfe_run_file, "w") as f:
-                        json.dump(pqfe_metrics, f, indent=4)
-
-                    with open(aes_run_file, "w") as f:
-                        json.dump(aes_metrics, f, indent=4)
+                    # Replace binary data with metadata before adding to metrics lists
+                    if "result" in pqfe_metrics and isinstance(pqfe_metrics["result"], tuple):
+                        # Keep file paths for PQFE
+                        pqfe_metrics["result"] = [str(path) for path in pqfe_metrics["result"]]
+                    
+                    if "result" in aes_metrics and isinstance(aes_metrics["result"], tuple):
+                        # Replace binary data with size information for AES
+                        aes_metrics["result"] = [
+                            f"b'{len(item)} bytes'" if isinstance(item, bytes) else str(item)
+                            for item in aes_metrics["result"]
+                        ]
+                    
+                    if "result" in pqfe_in_memory_metrics:
+                        # Replace binary data with size information for in-memory PQFE
+                        if isinstance(pqfe_in_memory_metrics["result"], bytes):
+                            pqfe_in_memory_metrics["result"] = f"b'{len(pqfe_in_memory_metrics['result'])} bytes'"
 
                     pqfe_metrics_list.append(pqfe_metrics)
                     aes_metrics_list.append(aes_metrics)
+                    pqfe_in_memory_metrics_list.append(pqfe_in_memory_metrics)
 
                 # Calculate average metrics
                 avg_pqfe_metrics = {
@@ -219,6 +308,12 @@ class ProfilingSuite:
                     "cpu": sum(m["cpu"] for m in aes_metrics_list) / 10,
                 }
 
+                avg_pqfe_in_memory_metrics = {
+                    "time": sum(m["time"] for m in pqfe_in_memory_metrics_list) / 10,
+                    "memory": sum(m["memory"] for m in pqfe_in_memory_metrics_list) / 10,
+                    "cpu": sum(m["cpu"] for m in pqfe_in_memory_metrics_list) / 10,
+                }
+
                 results.append({
                     "size": size,
                     "pqfe": {
@@ -228,10 +323,14 @@ class ProfilingSuite:
                     "aes": {
                         "individual_runs": aes_metrics_list,
                         "average": avg_aes_metrics
+                    },
+                    "pqfe_in_memory": {
+                        "individual_runs": pqfe_in_memory_metrics_list,
+                        "average": avg_pqfe_in_memory_metrics
                     }
                 })
 
-                # Save individual results to separate files instead of a single JSON
+                # Save individual results to separate JSON files in the json directory
                 size_results = {
                     "size": size,
                     "pqfe": {
@@ -241,26 +340,35 @@ class ProfilingSuite:
                     "aes": {
                         "individual_runs": aes_metrics_list,
                         "average": avg_aes_metrics
+                    },
+                    "pqfe_in_memory": {
+                        "individual_runs": pqfe_in_memory_metrics_list,
+                        "average": avg_pqfe_in_memory_metrics
                     }
                 }
-                with open(self.output_dir / f"results_{size}.json", "w") as f:
+                with open(self.json_dir / f"results_{size}.json", "w") as f:
                     json.dump(size_results, f, indent=4)
 
                 print(f"Tests for file size {size} bytes completed.")
             finally:
                 self.cleanup_test_file(file_path)
-                del pqfe, pqfe_metrics_list, aes_metrics_list, pqfe_metrics, aes_metrics, avg_pqfe_metrics, avg_aes_metrics
+                del pqfe, pqfe_metrics_list, aes_metrics_list, pqfe_in_memory_metrics_list, pqfe_metrics, aes_metrics, pqfe_in_memory_metrics, avg_pqfe_metrics, avg_aes_metrics, avg_pqfe_in_memory_metrics
                 import gc
                 gc.collect()
 
-        # Save detailed results to JSON
-        with open(self.output_dir / "graph_data.json", "w") as f:
+        # Save detailed results to JSON in the json directory
+        with open(self.json_dir / "graph_data.json", "w") as f:
             json.dump(results, f, indent=4)
 
         print("All tests completed. Generating plots...")
         self.plot_results(results)
         self.plot_additional_metrics(results)
-        print("Plots generated and saved.")
+        
+        # Clean up any remaining temporary files
+        self.cleanup_all_bin_files()
+        
+        print("Plots generated and saved in the charts directory.")
+        print(f"Results saved in the json directory.")
 
 if __name__ == "__main__":
     suite = ProfilingSuite()
@@ -285,9 +393,9 @@ if __name__ == "__main__":
         33554432,       # 32 MB
         67108864,       # 64 MB
         134217728,      # 128 MB
-        # 268435456,      # 256 MB
-        # 536870912,      # 512 MB
-        # 1073741824      # 1 GB
+        268435456,      # 256 MB
+        536870912,      # 512 MB
+        1073741824      # 1 GB
     ]
 
     suite.run_tests(file_sizes)
