@@ -152,3 +152,4 @@ test_*
 
 .python-version
 profiling_results/
+profiling_results_*/
