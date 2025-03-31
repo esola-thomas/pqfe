@@ -137,7 +137,10 @@ class ProfilingSuite:
                 pqfe_storage.append(os.path.getsize(pqfe_result["encrypted_file_path"]))
             else:
                 pqfe_storage.append(0)
-        aes_storage = [len(r["aes"]["average"]["result"][0]) for r in results]
+        aes_storage = [
+            len(r["aes"]["average"].get("result", [b""])[0]) if "result" in r["aes"]["average"] else 0
+            for r in results
+        ]
 
         plt.figure(figsize=(10, 6))
         plt.plot(sizes, pqfe_storage, label="PQFE Encrypted Size", marker="o")
@@ -151,8 +154,7 @@ class ProfilingSuite:
 
     def run_tests(self, file_sizes):
         print("Initializing PQFE and AES keys...")
-        pqfe = PQFE()
-        public_key, private_key = pqfe.generate_keys()
+        public_key, private_key = PQFE().generate_keys()
         aes_key = os.urandom(32)
         print("Keys initialized.")
 
@@ -160,6 +162,7 @@ class ProfilingSuite:
 
         for size in file_sizes:
             print(f"Starting tests for file size: {size} bytes...")
+            pqfe = PQFE()  # Initialize PQFE instance for each test
             file_path = self.output_dir / f"test_file_{size}.bin"
             self.generate_test_file(size, file_path)
 
@@ -186,6 +189,14 @@ class ProfilingSuite:
 
                     pqfe_metrics_list.append(pqfe_metrics)
                     aes_metrics_list.append(aes_metrics)
+
+                # Remove the 'result' field from individual runs and averages
+                for metric in pqfe_metrics_list:
+                    if "result" in metric:
+                        del metric["result"]
+                for metric in aes_metrics_list:
+                    if "result" in metric:
+                        del metric["result"]
 
                 # Calculate average metrics
                 avg_pqfe_metrics = {
@@ -214,6 +225,9 @@ class ProfilingSuite:
                 print(f"Tests for file size {size} bytes completed.")
             finally:
                 self.cleanup_test_file(file_path)
+                del pqfe, pqfe_metrics_list, aes_metrics_list, pqfe_metrics, aes_metrics, avg_pqfe_metrics, avg_aes_metrics
+                import gc
+                gc.collect()
 
         # Save detailed results to JSON
         with open(self.output_dir / "graph_data.json", "w") as f:
@@ -229,27 +243,27 @@ if __name__ == "__main__":
 
     # More evenly spaced file sizes (logarithmic scale)
     file_sizes = [
-        1024,           # 1 KB
-        2048,           # 2 KB
-        4096,           # 4 KB
-        8192,           # 8 KB
-        16384,          # 16 KB
-        32768,          # 32 KB
-        65536,          # 64 KB
-        131072,         # 128 KB
-        262144,         # 256 KB
-        524288,         # 512 KB
-        1048576,        # 1 MB
-        2097152,        # 2 MB
-        4194304,        # 4 MB
-        8388608,        # 8 MB
-        16777216,       # 16 MB
-        33554432,       # 32 MB
-        67108864,       # 64 MB
-        134217728,      # 128 MB
-        268435456,      # 256 MB
-        536870912,      # 512 MB
-        1073741824      # 1 GB
+        1024           # 1 KB
+        # 2048,           # 2 KB
+        # 4096,           # 4 KB
+        # 8192,           # 8 KB
+        # 16384,          # 16 KB
+        # 32768,          # 32 KB
+        # 65536,          # 64 KB
+        # 131072,         # 128 KB
+        # 262144,         # 256 KB
+        # 524288,         # 512 KB
+        # 1048576,        # 1 MB
+        # 2097152,        # 2 MB
+        # 4194304,        # 4 MB
+        # 8388608,        # 8 MB
+        # 16777216,       # 16 MB
+        # 33554432,       # 32 MB
+        # 67108864,       # 64 MB
+        # 134217728,      # 128 MB
+        # 268435456,      # 256 MB
+        # 536870912,      # 512 MB
+        # 1073741824      # 1 GB
     ]
 
     suite.run_tests(file_sizes)
