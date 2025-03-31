@@ -90,17 +90,34 @@ This design allows for high performance when encrypting large files while ensuri
    - Monitor updates from cryptographic libraries and the NIST PQC process.
    - Stay informed about emerging threats and update PQFE accordingly.
 
+## Updated Security Practices
+
+- **Key Storage Enhancements:**
+  - Ensure private keys are stored in hardware security modules (HSMs) or encrypted storage solutions.
+  - Implement multi-factor authentication (MFA) for accessing key management systems.
+
+- **Regular Audits:**
+  - Conduct quarterly security audits to identify vulnerabilities.
+  - Use automated tools to scan for misconfigurations and outdated dependencies.
+
+- **Incident Response:**
+  - Maintain a detailed incident response plan.
+  - Conduct regular drills to ensure readiness for potential security breaches.
+
+- **Dependency Management:**
+  - Monitor and update cryptographic libraries regularly.
+  - Subscribe to security advisories for dependencies like liboqs and cryptography.
+
 ## Reporting Security Issues
 
 If you discover a security vulnerability:
-If you discover a security vulnerability:
-1. Open an issue on GitHub (https://github.com/esola-thomas/PQFE/issues) describing the vulnerability
+1. Open an issue on GitHub (https://github.com/esola-thomas/PQFE/issues) describing the vulnerability.
 2. Provide as much detail as possible about the vulnerability, including:
    - Steps to reproduce
    - Affected components
    - Potential impact
    - Any suggested mitigations
-3. The maintainers will respond and work with you on a resolution
+3. The maintainers will respond and work with you on a resolution.
 
 ## Security Updates
 

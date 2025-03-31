@@ -228,7 +228,7 @@ class ProfilingSuite:
         plt.legend()
         
         # Add text annotation explaining the data points
-        plt.figtext(0.5, 0.01, "Note: Each data point represents the average of 10 runs.\nError bars show min/max values across all runs.", 
+        plt.figtext(0.5, 0.01, "Note: Each data point represents the average of 15 runs.\nError bars show min/max values across all runs.", 
                    ha="center", fontsize=9, bbox={"facecolor":"lightgray", "alpha":0.5, "pad":5})
         
         plt.tight_layout(rect=[0, 0.05, 1, 1])  # Adjust layout to make room for the note
@@ -255,7 +255,7 @@ class ProfilingSuite:
         ))
         
         # Add text annotation explaining the data points
-        plt.figtext(0.5, 0.01, "Note: Each data point represents the average of 10 runs.", 
+        plt.figtext(0.5, 0.01, "Note: Each data point represents the average of 15 runs.", 
                    ha="center", fontsize=9, bbox={"facecolor":"lightgray", "alpha":0.5, "pad":5})
         
         plt.tight_layout(rect=[0, 0.05, 1, 1])
@@ -462,7 +462,7 @@ class ProfilingSuite:
         plt.legend()
         
         # Add text annotation
-        plt.figtext(0.5, 0.01, "Note: Each data point represents the average of 10 runs.\nError bars show min/max values across all runs.", 
+        plt.figtext(0.5, 0.01, "Note: Each data point represents the average of 15 runs.\nError bars show min/max values across all runs.", 
                    ha="center", fontsize=9, bbox={"facecolor":"lightgray", "alpha":0.5, "pad":5})
         
         plt.tight_layout(rect=[0, 0.05, 1, 1])
@@ -480,7 +480,7 @@ class ProfilingSuite:
         plt.legend()
         
         # Add text annotation
-        plt.figtext(0.5, 0.01, "Note: Each data point represents the average of 10 runs.\nError bars show min/max values across all runs.", 
+        plt.figtext(0.5, 0.01, "Note: Each data point represents the average of 15 runs.\nError bars show min/max values across all runs.", 
                    ha="center", fontsize=9, bbox={"facecolor":"lightgray", "alpha":0.5, "pad":5})
         
         plt.tight_layout(rect=[0, 0.05, 1, 1])
@@ -621,7 +621,7 @@ class ProfilingSuite:
                 aes_metrics_list = []
                 pqfe_in_memory_metrics_list = []
 
-                for _ in range(10):  # Run each test 10 times
+                for _ in range(15):  # Run each test 15 times
                     try:
                         # Check file size limit for PQFE
                         max_size = 2**31 - 1  # ~2GB limit
