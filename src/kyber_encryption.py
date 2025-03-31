@@ -7,6 +7,7 @@ Now supports a pluggable symmetric cipher layer.
 
 from typing import Tuple, Dict, Any, Optional
 import oqs
+from pathlib import Path
 from .file_ops import read_file, write_encrypted_file, read_encrypted_file, write_decrypted_file
 from .symmetric import get_cipher_instance
 
@@ -68,6 +69,9 @@ class KyberEncryption:
             - ciphertext (bytes): The Kyber ciphertext
             - shared_secret (bytes): The shared secret derived from key encapsulation
         """
+        if isinstance(input_file, Path):
+            input_file = str(input_file)
+
         if public_key is None:
             raise ValueError("Public key is required for encryption.")
 
