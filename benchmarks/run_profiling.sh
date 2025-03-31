@@ -9,6 +9,7 @@ LOG_FILE="$RESULTS_DIR/container_logs.txt"
 STATS_FILE="$RESULTS_DIR/container_stats.txt"
 
 # Ensure the results directory exists
+rm -rf "$RESULTS_DIR"
 mkdir -p "$RESULTS_DIR"
 
 # Build the Docker image
