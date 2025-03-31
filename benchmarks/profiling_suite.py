@@ -187,16 +187,24 @@ class ProfilingSuite:
                             break
                         print(f"Retrying AES test for file size {size} due to high CPU utilization ({aes_metrics['cpu']}%).")
 
+                    # Ensure 'result' field is removed before saving to JSON
+                    if "result" in pqfe_metrics:
+                        del pqfe_metrics["result"]
+                    if "result" in aes_metrics:
+                        del aes_metrics["result"]
+
+                    # Save individual run results to disk
+                    pqfe_run_file = self.output_dir / f"pqfe_run_{size}_{_}.json"
+                    aes_run_file = self.output_dir / f"aes_run_{size}_{_}.json"
+
+                    with open(pqfe_run_file, "w") as f:
+                        json.dump(pqfe_metrics, f, indent=4)
+
+                    with open(aes_run_file, "w") as f:
+                        json.dump(aes_metrics, f, indent=4)
+
                     pqfe_metrics_list.append(pqfe_metrics)
                     aes_metrics_list.append(aes_metrics)
-
-                # Remove the 'result' field from individual runs and averages
-                for metric in pqfe_metrics_list:
-                    if "result" in metric:
-                        del metric["result"]
-                for metric in aes_metrics_list:
-                    if "result" in metric:
-                        del metric["result"]
 
                 # Calculate average metrics
                 avg_pqfe_metrics = {
@@ -222,6 +230,22 @@ class ProfilingSuite:
                         "average": avg_aes_metrics
                     }
                 })
+
+                # Save individual results to separate files instead of a single JSON
+                size_results = {
+                    "size": size,
+                    "pqfe": {
+                        "individual_runs": pqfe_metrics_list,
+                        "average": avg_pqfe_metrics
+                    },
+                    "aes": {
+                        "individual_runs": aes_metrics_list,
+                        "average": avg_aes_metrics
+                    }
+                }
+                with open(self.output_dir / f"results_{size}.json", "w") as f:
+                    json.dump(size_results, f, indent=4)
+
                 print(f"Tests for file size {size} bytes completed.")
             finally:
                 self.cleanup_test_file(file_path)
@@ -243,24 +267,24 @@ if __name__ == "__main__":
 
     # More evenly spaced file sizes (logarithmic scale)
     file_sizes = [
-        1024           # 1 KB
-        # 2048,           # 2 KB
-        # 4096,           # 4 KB
-        # 8192,           # 8 KB
-        # 16384,          # 16 KB
-        # 32768,          # 32 KB
-        # 65536,          # 64 KB
-        # 131072,         # 128 KB
-        # 262144,         # 256 KB
-        # 524288,         # 512 KB
-        # 1048576,        # 1 MB
-        # 2097152,        # 2 MB
-        # 4194304,        # 4 MB
-        # 8388608,        # 8 MB
-        # 16777216,       # 16 MB
-        # 33554432,       # 32 MB
-        # 67108864,       # 64 MB
-        # 134217728,      # 128 MB
+        1024,           # 1 KB
+        2048,           # 2 KB
+        4096,           # 4 KB
+        8192,           # 8 KB
+        16384,          # 16 KB
+        32768,          # 32 KB
+        65536,          # 64 KB
+        131072,         # 128 KB
+        262144,         # 256 KB
+        524288,         # 512 KB
+        1048576,        # 1 MB
+        2097152,        # 2 MB
+        4194304,        # 4 MB
+        8388608,        # 8 MB
+        16777216,       # 16 MB
+        33554432,       # 32 MB
+        67108864,       # 64 MB
+        134217728,      # 128 MB
         # 268435456,      # 256 MB
         # 536870912,      # 512 MB
         # 1073741824      # 1 GB
