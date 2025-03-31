@@ -151,3 +151,5 @@ test_*
 *.swp
 
 .python-version
+profiling_results/
+profiling_results_*/

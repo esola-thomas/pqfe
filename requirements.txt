@@ -1,3 +1,11 @@
 # Copyright (c) 2025 Ernesto Sola-Thomas
 pytest
 cryptography
+psutil
+matplotlib
+seaborn
+pyparsing
+psutil
+matplotlib
+seaborn
+six

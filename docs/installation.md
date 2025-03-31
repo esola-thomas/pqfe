@@ -2,10 +2,15 @@
 
 ## Prerequisites
 
-- Python 3.10 or higher
-- pip package manager
-- C compiler (for liboqs)
-- CMake 3.5 or higher
+- Python 3.10 or higher (recommended for better performance and security).
+- pip package manager (latest version).
+- C compiler (for liboqs).
+- CMake 3.20 or higher (for compatibility with the latest build tools).
+
+### Additional Notes
+
+- Ensure your system has at least 8GB of RAM for building and running the library.
+- Use a virtual environment to isolate dependencies and avoid conflicts.
 
 ## Dependencies
 
@@ -55,19 +60,23 @@ python benchmarks/performance_benchmark.py
 
 ### Common Issues
 
-1. liboqs build fails:
-   - Ensure you have the required build tools installed
-   - Check CMake version (3.5+ required)
-   - Verify compiler is working correctly
+1. **liboqs build fails:**
+   - Ensure you have the required build tools installed.
+   - Check CMake version (3.20+ required).
+   - Verify compiler is working correctly.
 
-2. Import errors:
-   - Verify virtual environment is activated
-   - Check Python version compatibility
-   - Reinstall dependencies if needed
+2. **Import errors:**
+   - Verify virtual environment is activated.
+   - Check Python version compatibility.
+   - Reinstall dependencies if needed.
+
+3. **Performance Issues:**
+   - Ensure your system meets the recommended hardware requirements.
+   - Use the latest version of dependencies to benefit from performance improvements.
 
 ### Getting Help
 
 If you encounter any issues:
 1. Check the [GitHub Issues](https://github.com/your-username/pqfe/issues)
 2. Review error messages and logs
-3. Create a new issue with detailed information about the problem 
+3. Create a new issue with detailed information about the problem

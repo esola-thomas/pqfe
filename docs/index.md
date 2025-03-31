@@ -51,6 +51,7 @@ decrypted = pqfe.decrypt_file(result["encrypted_file_path"], result["ciphertext"
 - [Installation Guide](installation.md)
 - [API Documentation](api.md)
 - [Security Guidelines](security.md)
+- [Benchmarking Guide](benchmarks.md)
 
 ## License
 
